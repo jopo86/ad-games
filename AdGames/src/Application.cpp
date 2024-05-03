@@ -10,7 +10,7 @@ void Application::run()
 	m_errorHandler = Onyx::ErrorHandler(true, true);
 	Onyx::Init(m_errorHandler);
 
-	ArmyMathGame::Run();
+	CubeRunnerGame::Run();
 }
 
 void Application::dispose()

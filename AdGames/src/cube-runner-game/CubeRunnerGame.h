@@ -1,8 +1,6 @@
 #pragma once
 
-
-
-namespace ArmyMathGame
+namespace CubeRunnerGame
 {
     void Run();
 }

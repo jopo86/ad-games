@@ -2,7 +2,7 @@
 
 #include <Onyx/Core.h>
 
-#include "army-math-game/ArmyMathGame.h"
+#include "cube-runner-game/CubeRunnerGame.h"
 
 class Application
 {

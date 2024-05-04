@@ -66,9 +66,10 @@ void CubeRunnerGame::Run()
         spikes.push_back(spike);
     }
 
-	Onyx::Font font = Onyx::Font::Load(Onyx::Resources("fonts/Poppins/Poppins-Regular.ttf"), 48);
+	Onyx::Font font = Onyx::Font::Load(Onyx::Resources("fonts/Poppins/Poppins-Regular.ttf"), 96);
 	Onyx::TextRenderable scoreText("0", font, Vec3(0.2f));
 	scoreText.setPosition(Vec2(20, 720 - 60));
+	scoreText.setScale(0.5f);
 
 	renderer.add(floor);
 	renderer.add(player);
@@ -124,7 +125,12 @@ void CubeRunnerGame::Run()
 		cam.update();
 
 		if (input.isKeyDown(Onyx::Key::Escape)) window.close();
-		if (input.isKeyDown(Onyx::Key::F12)) window.toggleFullscreen(1280, 720, IVec2(2560 / 2 - 1280 / 2, 1440 / 2 - 720 / 2));
+		if (input.isKeyDown(Onyx::Key::F12))
+		{
+			window.toggleFullscreen(1280, 720, IVec2(2560 / 2 - 1280 / 2, 1440 / 2 - 720 / 2));
+			if (window.isFullscreen()) scoreText.setScale(window.getBufferWidth() / 1280.0f * 0.5f);
+            else scoreText.setScale(0.5f);
+		}
 
 		for (auto& spike : spikes)
 		{
@@ -139,6 +145,10 @@ void CubeRunnerGame::Run()
 
 		score += dt * 20.0f;
 		scoreText.setText(std::to_string((int)score));
+		IVec2 scoreTextSize = font.getStringSize(scoreText.getText());
+		scoreTextSize.setX(scoreTextSize.getX() * scoreText.getScale().getX());
+		scoreTextSize.setY(scoreTextSize.getY() * scoreText.getScale().getY());
+		scoreText.setPosition(Vec2(window.getBufferWidth() / 2 - scoreTextSize.getX() / 2, window.getBufferHeight() - 100.0f - scoreTextSize.getY()));
 
 		spikeSpeed += dt * 0.1f;
 		playerSpeed += dt * 0.05f;

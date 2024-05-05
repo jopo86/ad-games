@@ -2,7 +2,7 @@
 
 #include <Onyx/Core.h>
 
-#include "cube-runner-game/CubeRunnerGame.h"
+#include "spike-dodge/SpikeDodge.h"
 
 class Application
 {

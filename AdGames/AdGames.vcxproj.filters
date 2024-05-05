@@ -18,13 +18,10 @@
     <ClCompile Include="src\EntryPoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\army-math-game\ArmyMathGame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\cube-runner-game\CubeRunnerGame.cpp">
+    <ClCompile Include="src\spike-dodge\SpikeDodge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,7 +32,7 @@
     <ClInclude Include="src\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\cube-runner-game\CubeRunnerGame.h">
+    <ClInclude Include="src\spike-dodge\SpikeDodge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

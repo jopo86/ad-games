@@ -1,0 +1,1 @@
+These files are only guaranteed to work on Windows with Visual Studio 2022.

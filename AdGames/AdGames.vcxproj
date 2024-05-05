@@ -159,14 +159,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\cube-runner-game\CubeRunnerGame.cpp" />
+    <ClCompile Include="src\spike-dodge\SpikeDodge.cpp" />
     <ClCompile Include="src\EntryPoint.cpp" />
     <ClCompile Include="src\Application.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\army-math-game\ArmyMathGame.h" />
     <ClInclude Include="src\Application.h" />
-    <ClInclude Include="src\cube-runner-game\CubeRunnerGame.h" />
+    <ClInclude Include="src\spike-dodge\SpikeDodge.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -41,11 +41,12 @@ void SpikeDodge::Run()
 	cam.setViewDistance(1000.0f);
 
 	Onyx::Lighting lighting(Vec3::White(), 0.3f, Vec3(0.2f, -1.0f, -0.3f));
+	Onyx::Fog fog(Vec3::LightBlue(), 40.0f, 90.0f);
 
-	Onyx::Renderer renderer(cam, lighting);
+	Onyx::Renderer renderer(cam, lighting, fog);
 	window.linkRenderer(renderer);
 
-	Onyx::Model playerModel = Onyx::Model::LoadOBJ(Onyx::Resources("models/player.obj"));
+	Onyx::Model playerModel = Onyx::Model::LoadOBJ(Onyx::Resources("models/capsule.obj"));
 	Onyx::Model spikeModel = Onyx::Model::LoadOBJ(Onyx::Resources("models/spike.obj"));
 
 	Onyx::Renderable floor = Onyx::Renderable::ColoredQuad(10.0f, 1000.0f, Vec4::White());
@@ -117,6 +118,7 @@ void SpikeDodge::Run()
 		float lsx = 0.0f, lsy = 0.0f, rsx = 0.0f, rsy = 0.0f;
 		bool a = false, b = false, x = false, y = false, rs = false;
 
+		input.refreshGamepads();
 		input.update();
 
 		if (CAM_MOVEMENT)

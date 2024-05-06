@@ -93,7 +93,10 @@ void SpikeDodge::Run()
 
 	float spikeSpeed = 10.0f;
 
-	const bool CAM_MOVEMENT = false;
+	const bool CAM_MOVEMENT = false; 
+	
+	const float DEAD_ZONE_LEFT = 0.1f;
+	const float DEAD_ZONE_RIGHT = 0.1f;
 
 	float score = 0.0f;
 	float highScore;
@@ -111,6 +114,8 @@ void SpikeDodge::Run()
 	while (window.isOpen())
 	{
 		double dt = window.getDeltaTime();
+		float lsx = 0.0f, lsy = 0.0f, rsx = 0.0f, rsy = 0.0f;
+		bool a = false, b = false, x = false, y = false, rs = false;
 
 		input.update();
 
@@ -129,12 +134,33 @@ void SpikeDodge::Run()
 		{
 			if (input.isKeyDown(Onyx::Key::A) || input.isKeyDown(Onyx::Key::ArrowLeft)) {
 				player.translate(Vec3(-playerSpeed * dt, 0.0f, 0.0f));
-				if (player.getPosition().getX() < -PLAYER_STRAFE_LIMIT) player.setPosition(Vec3(-PLAYER_STRAFE_LIMIT, player.getPosition().getY(), player.getPosition().getZ()));
 			}
 			if (input.isKeyDown(Onyx::Key::D) || input.isKeyDown(Onyx::Key::ArrowRight)) {
 				player.translate(Vec3(playerSpeed * dt, 0.0f, 0.0f));
-				if (player.getPosition().getX() > PLAYER_STRAFE_LIMIT) player.setPosition(Vec3(PLAYER_STRAFE_LIMIT, player.getPosition().getY(), player.getPosition().getZ()));
 			}
+
+			for (const Onyx::Gamepad& gp : input.getGamepads())
+			{
+				if (abs(gp.getAxis(Onyx::GamepadAxis::LeftX)) > lsx) lsx = gp.getAxis(Onyx::GamepadAxis::LeftX);
+				if (abs(gp.getAxis(Onyx::GamepadAxis::LeftY)) > lsy) lsy = gp.getAxis(Onyx::GamepadAxis::LeftY);
+				if (abs(gp.getAxis(Onyx::GamepadAxis::RightX)) > rsx) rsx = gp.getAxis(Onyx::GamepadAxis::RightX);
+				if (abs(gp.getAxis(Onyx::GamepadAxis::RightY)) > rsy) rsy = gp.getAxis(Onyx::GamepadAxis::RightY);
+				if (gp.isButtonPressed(Onyx::GamepadButton::A)) a = true;
+				if (gp.isButtonPressed(Onyx::GamepadButton::B)) b = true;
+				if (gp.isButtonPressed(Onyx::GamepadButton::X)) x = true;
+				if (gp.isButtonPressed(Onyx::GamepadButton::Y)) y = true;
+				if (gp.isButtonPressed(Onyx::GamepadButton::RightStick)) rs = true;
+			}
+
+			lsx = abs(lsx) < DEAD_ZONE_LEFT ? 0.0f : lsx;
+			lsy = abs(lsy) < DEAD_ZONE_LEFT ? 0.0f : lsy;
+			rsx = abs(rsx) < DEAD_ZONE_RIGHT ? 0.0f : rsx;
+			rsy = abs(rsy) < DEAD_ZONE_RIGHT ? 0.0f : rsy;
+
+			player.translate(Vec3(lsx * playerSpeed * dt, 0.0f, 0.0f));
+
+			if (player.getPosition().getX() < -PLAYER_STRAFE_LIMIT) player.setPosition(Vec3(-PLAYER_STRAFE_LIMIT, player.getPosition().getY(), player.getPosition().getZ()));
+			else if (player.getPosition().getX() > PLAYER_STRAFE_LIMIT) player.setPosition(Vec3(PLAYER_STRAFE_LIMIT, player.getPosition().getY(), player.getPosition().getZ()));
 		}
 		cam.update();
 

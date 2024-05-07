@@ -9,6 +9,7 @@
 #include <Onyx/InputHandler.h>
 #include <Onyx/Math.h>
 #include <Onyx/FileUtils.h>
+#include <Onyx/Monitor.h>
 
 using Onyx::Math::Vec2, Onyx::Math::Vec3, Onyx::Math::Vec4, Onyx::Math::IVec2;
 
@@ -28,7 +29,8 @@ void SpikeDodge::Run()
 
 	window.init();
 	window.setBackgroundColor(Vec3::LightBlue());
-	window.setPosition(IVec2(2560 / 2 - 1280 / 2, 1440 / 2 - 720 / 2));
+	Onyx::Monitor monitor = Onyx::Monitor::GetPrimary();
+	window.setPosition(IVec2(monitor.getDimensions().getX() / 2 - window.getWidth() / 2, monitor.getDimensions().getY() / 2 - window.getHeight() / 2));
 
 	Onyx::InputHandler input;
 	window.linkInputHandler(input);
@@ -78,11 +80,20 @@ void SpikeDodge::Run()
 	highScoreText.setScale(0.3f);
 	highScoreText.setPosition(Vec2(20, 720 - 20 - highScoreText.dimensions().getY()));
 
+	std::string gameOverMessages[6] = {
+		"YOU SUCK", "ARE YOU AN IDIOT?", "IDIOT", "ARE YOU STUPID?", "SUCK = YOU", "LOSER!"
+	};
+
+	Onyx::TextRenderable youSuckText("GAME OVER", font, Vec4::Red());
+	youSuckText.setScale(0.5f);
+	youSuckText.hide();
+
 	renderer.add(floor);
 	renderer.add(player);
 	for (auto& spike : spikes) renderer.add(spike);
 	renderer.add(scoreText);
 	renderer.add(highScoreText);
+	renderer.add(youSuckText);
 
 	const double CAM_SPEED = 6.0f;
 	const double CAM_SENS = 50.0f;
@@ -112,6 +123,8 @@ void SpikeDodge::Run()
 	input.setKeyCooldown(Onyx::Key::F1, 0.2f);
 	input.setCursorLock(true);
 
+	bool dead = false;
+
 	while (window.isOpen())
 	{
 		double dt = window.getDeltaTime();
@@ -132,7 +145,7 @@ void SpikeDodge::Run()
 
 			cam.rotate(input.getMouseDeltas().getX() / 200.0f * CAM_SENS, input.getMouseDeltas().getY() / 200.0f * CAM_SENS);
 		}
-		else
+		else if (!dead)
 		{
 			if (input.isKeyDown(Onyx::Key::A) || input.isKeyDown(Onyx::Key::ArrowLeft)) {
 				player.translate(Vec3(-playerSpeed * dt, 0.0f, 0.0f));
@@ -183,19 +196,26 @@ void SpikeDodge::Run()
 		}
 		if (input.isKeyDown(Onyx::Key::F1)) renderer.ToggleWireframe();
 
-		for (auto& spike : spikes)
+		if (!dead)
 		{
-			spike.translate(Vec3(0.0f, 0.0f, spikeSpeed * dt));
-			if (spike.getPosition().getZ() > 10.0f)
-            {
-                spike.setPosition(Vec3((rand() % 900) / 100.0f - 4.5f, 0.0f, -90.0f));
-            }
+			for (auto& spike : spikes)
+			{
+				spike.translate(Vec3(0.0f, 0.0f, spikeSpeed * dt));
+				if (spike.getPosition().getZ() > 10.0f)
+				{
+					spike.setPosition(Vec3((rand() % 900) / 100.0f - 4.5f, 0.0f, -90.0f));
+				}
 
-			if (collision(player, spike)) window.close();
+				if (collision(player, spike))
+				{
+					dead = true;
+					youSuckText.show();
+				}
+			}
+
+			score += dt * 20.0f;
+			if (score > highScore) highScore = score;
 		}
-
-		score += dt * 20.0f;
-		if (score > highScore) highScore = score;
 
 		scoreText.setText(std::to_string((int)score));
 		Vec2 scoreTextSize = scoreText.dimensions();
@@ -204,6 +224,8 @@ void SpikeDodge::Run()
 		highScoreText.setText("High Score: " + std::to_string((int)highScore));
 		Vec2 highScoreTextSize = highScoreText.dimensions();
 		highScoreText.setPosition(Vec2(20.0f, window.getBufferHeight() - 20.0f - highScoreTextSize.getY()));
+
+		youSuckText.setPosition(Vec2(window.getBufferWidth() / 2 - youSuckText.dimensions().getX() / 2, window.getBufferHeight() / 2 - youSuckText.dimensions().getY() / 2));
 
 		spikeSpeed += dt * 0.1f;
 		playerSpeed += dt * 0.05f;

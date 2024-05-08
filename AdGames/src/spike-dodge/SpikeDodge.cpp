@@ -71,12 +71,13 @@ void SpikeDodge::Run()
         spikes.push_back(spike);
     }
 
-	Onyx::Font font = Onyx::Font::Load(Onyx::Resources("fonts/Poppins/Poppins-Regular.ttf"), 96);
-	Onyx::TextRenderable scoreText("0", font, Vec3(0.2f));
+	Onyx::Font fontReg = Onyx::Font::Load(Onyx::Resources("fonts/Poppins/Poppins-Regular.ttf"), 96);
+	Onyx::Font fontBold = Onyx::Font::Load(Onyx::Resources("fonts/Poppins/Poppins-Bold.ttf"), 96);
+	Onyx::TextRenderable scoreText("0", fontReg, Vec3(0.2f));
 	scoreText.setScale(0.5f);
 	scoreText.setPosition(Vec2(20, 720 - 60));
 
-	Onyx::TextRenderable highScoreText("High Score: 0", font, Vec4(Vec3(0.2f), 0.5f));
+	Onyx::TextRenderable highScoreText("High Score: 0", fontReg, Vec4(Vec3(0.2f), 0.5f));
 	highScoreText.setScale(0.3f);
 	highScoreText.setPosition(Vec2(20, 720 - 20 - highScoreText.dimensions().getY()));
 
@@ -84,8 +85,8 @@ void SpikeDodge::Run()
 		"YOU SUCK", "ARE YOU AN IDIOT?", "IDIOT", "ARE YOU STUPID?", "SUCK = YOU", "LOSER!"
 	};
 
-	Onyx::TextRenderable youSuckText("GAME OVER", font, Vec4::Red());
-	youSuckText.setScale(0.5f);
+	Onyx::TextRenderable youSuckText("GAME OVER", fontBold, Vec4::Red());
+	youSuckText.setScale(0.6f);
 	youSuckText.hide();
 
 	renderer.add(floor);

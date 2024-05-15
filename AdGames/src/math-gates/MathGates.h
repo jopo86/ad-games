@@ -21,8 +21,8 @@ namespace MathGates
 
 		Gate();
 		Gate(int val, Operator op, Onyx::Math::Vec3 color);
-		~Gate();
 
+		void translate(const Onyx::Math::Vec3& translation);
 		void addToRenderer(Onyx::Renderer& renderer);
 
 	private:
@@ -36,7 +36,12 @@ namespace MathGates
 		Onyx::Renderable m_rightPost;
 		Onyx::Renderable m_screen;
 
-		static bool sm_fontCreated;
 		static Onyx::Font sm_font;
+	};
+
+	class GunGrid
+	{
+	public:
+
 	};
 }

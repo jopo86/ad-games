@@ -21,12 +21,13 @@ namespace Onyx
 
 		/*
 			@brief Creates a new Shader object from the specified vertex and fragment shader source code.
-			This function may cause errors, it is recommended to use the overload with an error handler.
 			@param vertSource The vertex shader source code.
 			@param fragSource The fragment shader source code.
 			@param result A pointer to a boolean that will be set to true if the shader was successfully compiled, and false otherwise.
 		 */
 		Shader(const char* vertSource, const char* fragSource, bool* result = nullptr);
+
+		
 
 		/*
 			@brief Creates a new Shader object from another shader object.
@@ -42,8 +43,18 @@ namespace Onyx
 			@param vertSource The vertex shader file path.
 			@param fragSource The fragment shader file path.
 			@param result A pointer to a boolean that will be set to true if the shader was successfully compiled, and false otherwise.
+			@return The loaded shader.
 		 */
 		static Shader LoadSource(const std::string& vertPath, const std::string& fragPath, bool* result = nullptr);
+		
+		/*
+			@brief Loads a new Shader object from the combined shader source code.
+			See https://github.com/jopo86/onyx/wiki/guides#custom-shaders-guide for info on 'combining' shader types into one source file.
+			@param combinedSource The combined shader source code.
+			@param result A pointer to a boolean that will be set to true if the shader was successfully compiled, and false otherwise.
+			@return The loaded shader.
+		 */
+		static Shader LoadSource(const std::string& combinedPath, bool* result = nullptr);
 
 		/*
 			@brief Loads a new Shader object from the specified shader program binary (already compiled).
@@ -62,7 +73,7 @@ namespace Onyx
 		/*
 			@brief Saves the compiled shader program binary to a file.
 			@param dir The directory to save the file to. A slash at the end will be ignored.
-			@param filename The name of the file. An extension at the end will be replaced with .bin
+			@param filename The name of the file. Any extension at the end will be replaced with .bin
 			@param result A pointer to a boolean that will be set to true if the shader was successfully saved, and false otherwise.
 		 */
 		void saveBinary(const std::string& dir, const std::string& filename, bool* result = nullptr) const;
@@ -295,14 +306,12 @@ namespace Onyx
 		 */
 		void setMat4(const char* varName, const Math::Mat4& val, bool normalize = false);
 
-		/*
-			@brief Default constructor, initializes member variables.
-			Using an object created with this constructor will result in undefined behavior.
-		 */
 		void dispose() override;
 
 	private:
 		uint m_prog;
+
+		static std::pair<std::string, std::string> ParseCombined(const std::string& combinedPath, bool* result);
 
 	public:
 		/*
@@ -350,6 +359,13 @@ namespace Onyx
 		static Shader PN_Color(Onyx::Math::Vec4 rgba);
 
 		/*
+			@brief Returns a shader that uses the XYZ position of each vertex as the RGB color of that vertex, and blends the colors in between vertices.
+			Meant for vertex format PN, compatible with any vertex format that provides positions and normals.
+			@return The resulting shader.
+		 */
+		static Shader PN_XYZtoRGB();
+
+		/*
 			@brief Returns a shader that colors the mesh with the normals found in the vertex array.
 			Meant for vertex format PNC, compatible with any vertex format that provides positions, normals, and colors.
 			@return The resulting shader.
@@ -387,9 +403,16 @@ namespace Onyx
 
 		/*
 			@brief Returns a shader for UI text elements.
-			Incompatible with any vertex format, only used by TextRenderables.
+			Incompatible with any vertex format, only used by `TextRenderable`.
 			@return The resulting shader.
 		 */
 		static Shader UI_Text();
+
+		/*
+			@brief Returns a shader for 3D text elements.
+			Incompatible with any vertex format, only used by `TextRenderable3D`.
+			@return The resulting shader.
+		 */
+		static Shader Text();
 	};
 }

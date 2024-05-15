@@ -159,11 +159,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\math-gates\MathGates.cpp" />
     <ClCompile Include="src\spike-dodge\SpikeDodge.cpp" />
     <ClCompile Include="src\EntryPoint.cpp" />
     <ClCompile Include="src\Application.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\math-gates\MathGates.h" />
     <ClInclude Include="src\army-math-game\ArmyMathGame.h" />
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\spike-dodge\SpikeDodge.h" />

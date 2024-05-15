@@ -20,15 +20,9 @@ namespace Onyx
 		/*
 			@brief Default constructor, initializes member variables.
 			Using an object created with this constructor will result in undefined behavior.
+			Gamepads are not meant to be created by the user, they are created and managed by the InputHandler.
 		 */
 		Gamepad();
-
-		/*
-			@brief Creates a Gamepad object from the specified GLFW joystick ID.
-			@param joystickID The GLFW joystick ID.
-			@param result A pointer to a boolean that will be set to true if the gamepad was created successfully, and false otherwise.
-		 */
-		Gamepad(int joystickID, bool* result = nullptr);
 
 		/*
 			@brief Updates the gamepad input state.
@@ -48,11 +42,25 @@ namespace Onyx
 		int getGlfwID() const;
 
 		/*
-			@brief Checks if a button on the gamepad is pressed.
-			@param button The button to check.
-			@return True if the button is pressed, false otherwise.
+			@deprecated Use isButtonDown instead.
 		 */
+		[[deprecated("This function is deprecated and will be removed in the next major release. Use isButtonDown instead.")]]
 		bool isButtonPressed(GamepadButton button) const;
+
+		/*
+			@brief Checks if a button on the gamepad is down.
+			@param button The button to check.
+			@return True if the button is down, false otherwise.
+		 */
+		bool isButtonDown(GamepadButton button) const;
+
+		/*
+			@brief Checks if a button on the gamepad is tapped.
+			This function will return true only once per button press.
+			@param button The button to check.
+			@return True if the button is tapped, false otherwise.
+		 */
+		bool isButtonTapped(GamepadButton button);
 
 		/*
 			@brief Gets the value of an axis on the gamepad.
@@ -71,5 +79,8 @@ namespace Onyx
 		int m_joystickID;
 		std::string m_name;
 		GLFWgamepadstate m_state;
+		bool m_buttonsTapped[(int)Onyx::GamepadButton::MaxButton];
+
+		Gamepad(int joystickID, bool* result = nullptr);
 	};
 }

@@ -51,6 +51,7 @@ namespace Onyx
 			This function, more technically, uses the shader, binds the texture, binds the VAO, draws, unbinds the VAO, unbinds the texture, and unuses the shader.
 			@param view The view matrix to use, generally from an Camera.
 			@param proj The projection matrix to use, generally from an Camera.
+			@param camPos The position of the camera.
 		 */
 		void render(const Math::Mat4& view, const Math::Mat4& proj, const Math::Vec3& camPos);
 
@@ -189,10 +190,6 @@ namespace Onyx
 		 */
 		void resetTransform();
 
-		/*
-			@brief Destroys the object, freeing any used memory.
-			Do not use the object after this is called.
-		 */
 		void dispose() override;
 
 	private:
@@ -248,23 +245,15 @@ namespace Onyx
 		static Renderable ColoredTriangle(float base, float height, Math::Vec4 rgba);
 
 		/*
-			@brief Creates a triangle renderable with the specified 3 vertices and color.
-			@param a The first vertex.
-			@param b The second vertex.
-			@param c The third vertex.
-			@param rgb The color, specified as red, green, and blue values ranging from 0 to 1.
-			@return The resulting renderable.
+			@deprecated This function is deprecated and will be removed in the next major release.
 		 */
+		[[deprecated("This function is deprecated and will be removed in the next major release. Use the other `ColoredTriangle` overloads")]]
 		static Renderable ColoredTriangle(Math::Vec2 a, Math::Vec2 b, Math::Vec2 c, Math::Vec3 rgb);
 
 		/*
-			@brief Creates a triangle renderable with the specified 3 vertices and color.
-			@param a The first vertex.
-			@param b The second vertex.
-			@param c The third vertex.
-			@param rgba The color, specified as red, green, blue, and alpha (transparency) values ranging from 0 to 1.
-			@return The resulting renderable.
+			@deprecatd This function is deprecated and will be removed in the next major release.
 		 */
+		[[deprecated("This function is deprecated and will be removed in the next major release. Use the other `ColoredTriangle` overloads")]]
 		static Renderable ColoredTriangle(Math::Vec2 a, Math::Vec2 b, Math::Vec2 c, Math::Vec4 rgba);
 
 		/*
@@ -283,12 +272,9 @@ namespace Onyx
 		static Renderable VertexColoredTriangle(float base, float height);
 
 		/*
-			@brief Creates a triangle renderable with the specified 3 vertices and uses the XYZ position of each vertex as the RGB color of that vertex, and blends the colors in between vertices.
-			@param a The first vertex.
-			@param b The second vertex.
-			@param c The third vertex.
-			@return The resulting renderable.
+			@deprecated This function is deprecated and will be removed in the next major release.
 		 */
+		[[deprecated("This function is deprecated and will be removed in the next major release. Use the other `VertexColoredTriangle` overloads")]]
 		static Renderable VertexColoredTriangle(Math::Vec2 a, Math::Vec2 b, Math::Vec2 c);
 
 		/*
@@ -309,13 +295,9 @@ namespace Onyx
 		static Renderable TexturedTriangle(float base, float height, Texture texture);
 
 		/*
-			@brief Creates a triangle renderable with the specified 3 vertices and texture.
-			@param a The first vertex.
-			@param b The second vertex.
-			@param c The third vertex.
-			@param texture The texture to use.
-			@return The resulting renderable.
+* 			@deprecated This function is deprecated and will be removed in the next major release.
 		 */
+		[[deprecated("This function is deprecated and will be removed in the next major release. Use the other `TexturedTriangle` overloads")]]
 		static Renderable TexturedTriangle(Math::Vec2 a, Math::Vec2 b, Math::Vec2 c, Texture texture);
 
 		/*
@@ -353,25 +335,15 @@ namespace Onyx
 		static Renderable ColoredQuad(float width, float height, Math::Vec4 rgba);
 
 		/*
-			@brief Creates a quadrilateral renderable with the specified vertices and color.
-			@param a The bottom-left vertex.
-			@param b The bottom-right vertex.
-			@param c The top-right vertex.
-			@param d The top-left vertex.
-			@param rgb The color, specified as red, green, and blue values ranging from 0 to 1.
-			@return The resulting renderable.
+			@deprecated This function is deprecated and will be removed in the next major release.
 		 */
+		[[deprecated("This function is deprecated and will be removed in the next major release. Use the other `ColoredQuad` overloads")]]
 		static Renderable ColoredQuad(Math::Vec2 a, Math::Vec2 b, Math::Vec2 c, Math::Vec2 d, Math::Vec3 rgb);
 
 		/*
-			@brief Creates a quadrilateral renderable with the specified vertices and color.
-			@param a The bottom-left vertex.
-			@param b The bottom-right vertex.
-			@param c The top-right vertex.
-			@param d The top-left vertex.
-			@param rgba The color, specified as red, green, blue, and alpha (transparency) values ranging from 0 to 1.
-			@return The resulting renderable.
+			@deprecated This function is deprecated and will be removed in the next major release.
 		 */
+		[[deprecated("This function is deprecated and will be removed in the next major release. Use the other `ColoredQuad` overloads")]]
 		static Renderable ColoredQuad(Math::Vec2 a, Math::Vec2 b, Math::Vec2 c, Math::Vec2 d, Math::Vec4 rgba);
 
 		/*
@@ -390,13 +362,9 @@ namespace Onyx
 		static Renderable VertexColoredQuad(float width, float height);
 
 		/*
-			@brief Creates a quadrilateral renderable with the specified 4 vertices and uses the XYZ position of each vertex as the RGB color of that vertex, and blends the colors in between vertices.
-			@param a The bottom-left vertex.
-			@param b The bottom-right vertex.
-			@param c The top-right vertex.
-			@param d The top-left vertex.
-			@return The resulting renderable.
+			@deprecated This function is deprecated and will be removed in the next major release.
 		 */
+		[[deprecated("This function is deprecated and will be removed in the next major release. Use the other `VertexColoredQuad` overloads")]]
 		static Renderable VertexColoredQuad(Math::Vec2 a, Math::Vec2 b, Math::Vec2 c, Math::Vec2 d);
 
 		/*
@@ -417,14 +385,82 @@ namespace Onyx
 		static Renderable TexturedQuad(float width, float height, Texture texture);
 
 		/*
-			@brief Creates a rectangle renderable with the specified 4 vertices and texture.
-			@param a The bottom-left vertex.
-			@param b The bottom-right vertex.
-			@param c The top-right vertex.
-			@param d The top-left vertex.
-			@return The resulting renderable.
+			@deprecated This function is deprecated and will be removed in the next major release.
 		 */
+		[[deprecated("This function is deprecated and will be removed in the next major release. Use the other `TexturedQuad` overloads")]]
 		static Renderable TexturedQuad(Math::Vec2 a, Math::Vec2 b, Math::Vec2 c, Math::Vec2 d, Texture texture);
+
+		/*
+			@brief Creates a circle renderable with the specified radius, number of segments, and color.
+			@param radius The radius of the circle.
+			@param nSegments The number of line segments used to approximate the circle outline.
+			@param rgb The color, specified as red, green, and blue values ranging from 0 to 1.
+			@return The resulting mesh.
+		 */
+		static Renderable ColoredCircle(float radius, int nSegments, Math::Vec3 rgb);
+
+		/*
+			@brief Creates a circle renderable with the specified radius, number of segments, and color.
+			@param radius The radius of the circle.
+			@param nSegments The number of line segments used to approximate the circle outline.
+			@param rgba The color, specified as red, green, blue, and alpha (transparency) values ranging from 0 to 1.
+			@return The resulting mesh.
+		 */
+		static Renderable ColoredCircle(float radius, int nSegments, Math::Vec4 rgba);
+
+		/*
+			@brief Creates a circle renderable with the specified radius, angle step, and color.
+			@param radius The radius of the circle.
+			@param angleStep The angle step, in degrees, between vertices.
+			@param rgb The color, specified as red, green, and blue values ranging from 0 to 1.
+			@return The resulting mesh.
+		 */
+		static Renderable ColoredCircle(float radius, float angleStep, Math::Vec3 rgb);
+
+		/*
+			@brief Creates a circle renderable with the specified radius, angle step, and color.
+			@param radius The radius of the circle.
+			@param angleStep The angle step, in degrees, between vertices.
+			@param rgba The color, specified as red, green, blue, and alpha (transparency) values ranging from 0 to 1.
+			@return The resulting mesh.
+		 */
+		static Renderable ColoredCircle(float radius, float angleStep, Math::Vec4 rgba);
+
+		/*
+			@brief Creates a circle renderable with the specified radius, number of segments, and texture.
+			@param radius The radius of the circle.
+			@param nSegments The number of line segments used to approximate the circle outline.
+			@param texture The texture to use.
+			@return The resulting mesh.
+		 */
+		static Renderable VertexColoredCircle(float radius, int nSegments);
+
+		/*
+			@brief Creates a circle renderable with the specified radius, angle step, and texture.
+			@param radius The radius of the circle.
+			@param angleStep The angle step, in degrees, between vertices.
+			@param texture The texture to use.
+			@return The resulting mesh.
+		 */
+		static Renderable VertexColoredCircle(float radius, float angleStep);
+
+		/*
+			@brief Creates a circle renderable with the specified radius, number of segments, and texture.
+			@param radius The radius of the circle.
+			@param nSegments The number of line segments used to approximate the circle outline.
+			@param texture The texture to use.
+			@return The resulting mesh.
+		 */
+		static Renderable TexturedCircle(float radius, int nSegments, Texture texture);
+
+		/*
+			@brief Creates a circle renderable with the specified radius, angle step, and texture.
+			@param radius The radius of the circle.
+			@param angleStep The angle step, in degrees, between vertices.
+			@param texture The texture to use.
+			@return The resulting mesh.
+		 */
+		static Renderable TexturedCircle(float radius, float angleStep, Texture texture);
 
 		/*
 			@brief Creates a cube renderable with the specified side length and color.
@@ -449,5 +485,35 @@ namespace Onyx
 			@return The resulting mesh.
 		 */
 		static Renderable TexturedCube(float side, Texture texture);
+
+		/*
+			@brief Creates a rectangular prism renderable with the specified width, height, depth, and color.
+			@param width The width.
+			@param height The height.
+			@param depth The depth.
+			@param rgb The color, specified as red, green, and blue values ranging from 0 to 1.
+			@return The resulting mesh.
+		 */
+		static Renderable ColoredRectPrism(float width, float height, float depth, Math::Vec3 rgb);
+
+		/*
+			@brief Creates a rectangular prism renderable with the specified width, height, depth, and color.
+			@param width The width.
+			@param height The height.
+			@param depth The depth.
+			@param rgba The color, specified as red, green, blue, and alpha (transparency) values ranging from 0 to 1.
+			@return The resulting mesh.
+		 */
+		static Renderable ColoredRectPrism(float width, float height, float depth, Math::Vec4 rgba);
+
+		/*
+			@brief Creates a rectangular prism renderable with the specified width, height, depth, and texture.
+			@param width The width.
+			@param height The height.
+			@param depth The depth.
+			@param texture The texture to use.
+			@return The resulting mesh.
+		 */
+		static Renderable TexturedRectPrism(float width, float height, float depth, Texture texture);
 	};
 }

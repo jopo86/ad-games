@@ -2,8 +2,6 @@
 
 #include "SpikeDodge.h"
 
-#include <thread>
-
 #include <Onyx/Core.h>
 #include <Onyx/Window.h>
 #include <Onyx/InputHandler.h>
@@ -17,6 +15,8 @@ bool collision(const Onyx::ModelRenderable& player, const Onyx::ModelRenderable&
 
 void SpikeDodge::Run()
 {
+	Onyx::Init();
+
 	Onyx::Window window(
 		Onyx::WindowProperties{
 			.title = "Spike Dodge",
@@ -40,7 +40,6 @@ void SpikeDodge::Run()
 	cam.translateFB(-5.0f);
 	cam.translateUD(3.0f);
 	cam.pitch(-15.0f);
-	cam.setViewDistance(1000.0f);
 
 	Onyx::Lighting lighting(Vec3::White(), 0.3f, Vec3(0.2f, -1.0f, -0.3f));
 	Onyx::Fog fog(Vec3::LightBlue(), 40.0f, 90.0f);
@@ -57,7 +56,8 @@ void SpikeDodge::Run()
 
 	Onyx::ModelRenderable player(playerModel);
 	player.translate(Vec3(0.0f, 0.2f, -0.0f));
-	player.scale(0.4f);
+	player.scale(0.5f);
+
 
 	srand(time(nullptr));
 
@@ -81,20 +81,20 @@ void SpikeDodge::Run()
 	highScoreText.setScale(0.3f);
 	highScoreText.setPosition(Vec2(20, 720 - 20 - highScoreText.dimensions().getY()));
 
-	std::string gameOverMessages[6] = {
-		"YOU SUCK", "ARE YOU AN IDIOT?", "IDIOT", "ARE YOU STUPID?", "SUCK = YOU", "LOSER!"
-	};
-
-	Onyx::TextRenderable youSuckText("GAME OVER", fontBold, Vec4::Red());
-	youSuckText.setScale(0.6f);
-	youSuckText.hide();
+	Onyx::TextRenderable gameOverText("GAME OVER", fontBold, Vec4::Red());
+	Onyx::TextRenderable gameOverSubText("[R] to restart, [ESC] to exit", fontReg, Vec4::Red());
+	gameOverText.setScale(0.6f);
+	gameOverSubText.setScale(0.3f);
+	gameOverText.hide();
+	gameOverSubText.hide();
 
 	renderer.add(floor);
 	renderer.add(player);
 	for (auto& spike : spikes) renderer.add(spike);
 	renderer.add(scoreText);
 	renderer.add(highScoreText);
-	renderer.add(youSuckText);
+	renderer.add(gameOverText);
+	renderer.add(gameOverSubText);
 
 	const double CAM_SPEED = 6.0f;
 	const double CAM_SENS = 50.0f;
@@ -120,19 +120,17 @@ void SpikeDodge::Run()
 	}
 	else highScore = 0.0f;
 
-	input.setKeyCooldown(Onyx::Key::F12, 0.5f);
-	input.setKeyCooldown(Onyx::Key::F1, 0.2f);
 	input.setCursorLock(true);
 
 	bool dead = false;
 
+	bool restart = false;
 	while (window.isOpen())
 	{
 		double dt = window.getDeltaTime();
 		float lsx = 0.0f, lsy = 0.0f, rsx = 0.0f, rsy = 0.0f;
 		bool a = false, b = false, x = false, y = false, rs = false;
 
-		input.refreshGamepads();
 		input.update();
 
 		if (CAM_MOVEMENT)
@@ -161,11 +159,11 @@ void SpikeDodge::Run()
 				if (abs(gp.getAxis(Onyx::GamepadAxis::LeftY)) > lsy) lsy = gp.getAxis(Onyx::GamepadAxis::LeftY);
 				if (abs(gp.getAxis(Onyx::GamepadAxis::RightX)) > rsx) rsx = gp.getAxis(Onyx::GamepadAxis::RightX);
 				if (abs(gp.getAxis(Onyx::GamepadAxis::RightY)) > rsy) rsy = gp.getAxis(Onyx::GamepadAxis::RightY);
-				if (gp.isButtonPressed(Onyx::GamepadButton::A)) a = true;
-				if (gp.isButtonPressed(Onyx::GamepadButton::B)) b = true;
-				if (gp.isButtonPressed(Onyx::GamepadButton::X)) x = true;
-				if (gp.isButtonPressed(Onyx::GamepadButton::Y)) y = true;
-				if (gp.isButtonPressed(Onyx::GamepadButton::RightStick)) rs = true;
+				if (gp.isButtonDown(Onyx::GamepadButton::A)) a = true;
+				if (gp.isButtonDown(Onyx::GamepadButton::B)) b = true;
+				if (gp.isButtonDown(Onyx::GamepadButton::X)) x = true;
+				if (gp.isButtonDown(Onyx::GamepadButton::Y)) y = true;
+				if (gp.isButtonDown(Onyx::GamepadButton::RightStick)) rs = true;
 			}
 
 			lsx = abs(lsx) < DEAD_ZONE_LEFT ? 0.0f : lsx;
@@ -178,12 +176,17 @@ void SpikeDodge::Run()
 			if (player.getPosition().getX() < -PLAYER_STRAFE_LIMIT) player.setPosition(Vec3(-PLAYER_STRAFE_LIMIT, player.getPosition().getY(), player.getPosition().getZ()));
 			else if (player.getPosition().getX() > PLAYER_STRAFE_LIMIT) player.setPosition(Vec3(PLAYER_STRAFE_LIMIT, player.getPosition().getY(), player.getPosition().getZ()));
 		}
+		else if (input.isKeyDown(Onyx::Key::R))
+		{
+			restart = true;
+			window.close();
+		}
 		cam.update();
 
-		if (input.isKeyDown(Onyx::Key::Escape)) window.close();
-		if (input.isKeyDown(Onyx::Key::F12))
+		if (input.isKeyTapped(Onyx::Key::Escape)) window.close();
+		if (input.isKeyTapped(Onyx::Key::F12))
 		{
-			window.toggleFullscreen(1280, 720, IVec2(2560 / 2 - 1280 / 2, 1440 / 2 - 720 / 2));
+			window.toggleFullscreen(1280, 720, IVec2(monitor.getDimensions().getX() / 2 - 1280 / 2, monitor.getDimensions().getY() / 2 - 720 / 2));
 			if (window.isFullscreen())
 			{
 				scoreText.setScale(window.getBufferWidth() / 1280.0f * 0.5f);
@@ -195,7 +198,7 @@ void SpikeDodge::Run()
 				highScoreText.setScale(0.3f);
 			}
 		}
-		if (input.isKeyDown(Onyx::Key::F1)) renderer.ToggleWireframe();
+		if (input.isKeyTapped(Onyx::Key::F1)) renderer.ToggleWireframe();
 
 		if (!dead)
 		{
@@ -210,7 +213,8 @@ void SpikeDodge::Run()
 				if (collision(player, spike))
 				{
 					dead = true;
-					youSuckText.show();
+					gameOverText.show();
+					gameOverSubText.show();
 				}
 			}
 
@@ -226,7 +230,8 @@ void SpikeDodge::Run()
 		Vec2 highScoreTextSize = highScoreText.dimensions();
 		highScoreText.setPosition(Vec2(20.0f, window.getBufferHeight() - 20.0f - highScoreTextSize.getY()));
 
-		youSuckText.setPosition(Vec2(window.getBufferWidth() / 2 - youSuckText.dimensions().getX() / 2, window.getBufferHeight() / 2 - youSuckText.dimensions().getY() / 2));
+		gameOverText.setPosition(Vec2(window.getBufferWidth() / 2 - gameOverText.dimensions().getX() / 2, window.getBufferHeight() / 2 - gameOverText.dimensions().getY() / 2));
+		gameOverSubText.setPosition(Vec2(window.getBufferWidth() / 2 - gameOverSubText.dimensions().getX() / 2, gameOverText.getPosition().getY() - 50.0f));
 
 		spikeSpeed += dt * 0.1f;
 		playerSpeed += dt * 0.05f;
@@ -240,10 +245,14 @@ void SpikeDodge::Run()
 	renderer.dispose();
 
 	Onyx::FileUtils::Write("data.txt", std::to_string(highScore), false);
+
+	Onyx::Terminate();
+	if (restart) Run();
 }
 
 bool collision(const Onyx::ModelRenderable& player, const Onyx::ModelRenderable& spike)
 {
 	float dist = (player.getPosition() - spike.getPosition()).magnitude();
 	return dist < (1.0f * player.getScale().getX() + 0.8f * spike.getScale().getX());
+	//             ^0.5 for diglet
 }

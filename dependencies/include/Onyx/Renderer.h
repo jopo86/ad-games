@@ -11,6 +11,7 @@
 #include "ModelRenderable.h"
 #include "UiRenderable.h"
 #include "TextRenderable.h"
+#include "TextRenderable3D.h"
 
 namespace Onyx
 {
@@ -104,6 +105,12 @@ namespace Onyx
 			Note that renderables cannot be removed once added, instead use hide().
 		 */
 		void add(TextRenderable& textRenderable);
+
+		/*
+			@brief Adds a 3D text renderable to the renderer.
+			Note that renderables cannot be removed once added, instead use hide().
+		 */
+		void add(TextRenderable3D& textRenderable3D);
 
 		/*
 			@brief Gets whether lighting is enabled for the renderer.
@@ -227,11 +234,6 @@ namespace Onyx
 		 */
 		static float GetLineWidth();
 
-		/*
-			@brief Disposes of the renderer, including all of the contained renderables.
-			This clears up any memory that the object was using.
-			This function should be used when the object is no longer needed, such as just before the program ends or the object goes out of scope.
-		 */
 		void dispose() override;
 
 	private:
@@ -239,6 +241,7 @@ namespace Onyx
 		std::vector<Renderable*> m_renderables;
 		std::vector<UiRenderable*> m_uiRenderables;
 		std::vector<TextRenderable*> m_textRenderables;
+		std::vector<TextRenderable3D*> m_textRenderables3D;
 
 		Window* m_pWin;
 		Camera* m_pCam;

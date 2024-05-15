@@ -9,8 +9,8 @@
  */
 
 #define ONYX_VERSION_MAJOR		1
-#define ONYX_VERSION_MINOR		0
-#define ONYX_VERSION_PATCH		0
+#define ONYX_VERSION_MINOR		1
+#define ONYX_VERSION_PATCH		1
 
 #define ONYX_PRE_RELEASE_NUM	0
 
@@ -122,6 +122,18 @@ namespace Onyx
 		Null,
 		Nearest,
 		Linear
+	};
+
+	/*
+		@brief Definitions for key states.
+		Used for polling input from an InputHandler object.
+	 */
+	enum KeyState
+	{
+		Untouched = -1,
+		Release = 0,
+		Press = 1,
+		Repeat = 2
 	};
 
 	/*
@@ -323,15 +335,20 @@ namespace Onyx
 	};
 
 	/*
-		@brief Definitions for key states.
-		Used for polling input from an InputHandler object.
+		@brief Definitions for standard cursor types.
 	 */
-	enum KeyState
+	enum class CursorType
 	{
-		Untouched = -1,
-		Release = 0,
-		Press = 1,
-		Repeat = 2
+		Null = -1,
+		Custom = 0,
+		Arrow = 0x00036001,
+		Ibeam = 0x00036002,
+		Crosshair = 0x00036003,
+		Hand = 0x00036004,
+		HorizontalResize = 0x00036005,
+		VerticalResize = 0x00036006,
+		DiagonalResizeTLBR = HorizontalResize | VerticalResize, // @brief Top Left --> Bottom Right
+		DiagonalResizeBLTR = DiagonalResizeTLBR + 1 // @brief Bottom Left --> Top Right
 	};
 
 	struct GLError
@@ -413,9 +430,25 @@ namespace Onyx
 	void Terminate();
 
 	/*
-	 @brief Starts a little demo of the library.
+		@brief Starts a little demo of the library.
 	 */
 	void Demo();
+
+	/*
+		@brief Gets the contents of the system clipboard.
+		The clipboard is what contains copied text from the user.
+		Use this function to 'paste' text.
+		@return The contents of the system clipboard as a string.
+	 */
+	std::string GetClipboardString();
+
+	/*
+		@brief Sets the text to copy to the clipboard.
+		The clipboard is what contains copied text from the user.
+		Use this function to 'copy' text.
+		@param str The text to copy to the clipboard.
+	 */
+	void SetClipboardString(const std::string& str);
 
 	/*
 		@brief Gets whether the library has been initialized.
@@ -444,10 +477,21 @@ namespace Onyx
 	void SetResourcePath(std::string path);
 
 	/*
-		@brief Sets the user pointer for the library.
-		This is needs to be used for setting any callbacks that are member functions.
+		@deprecated Use the named user pointer system instead - `SetUserPtr(const std::string& name, void* ptr)`.
 	 */
+	[[deprecated("This function is deprecated and will be removed in the next major release. Use the named user pointer system instead - `SetUserPtr(const std::string& name, void* ptr)`.")]]
 	void SetUserPtr(void* ptr);
+
+	/*
+		@brief Sets a user pointer for the library with the specified name.
+		You can set as many user pointers with different names as you want.
+		You can do whatever you want with this, but it is mainly used for callbacks.
+		The user pointer system uses an unordered map, so the retrieval time is fast.
+		If a user pointer with the specified name already exists, it will be overwritten.
+		@param name The name of the user pointer.
+		@param ptr The pointer to set.
+	 */
+	void SetUserPtr(const std::string& name, void* ptr);
 
 	/*
 		@brief Gets the filepath that resources such as shader presets are stored in.
@@ -463,18 +507,31 @@ namespace Onyx
 	std::string Resources(const std::string& path);
 
 	/*
-		@brief Gets the user pointer for the library.
-		This is needs to be used for setting any callbacks that are member functions.
+		@deprecated Use the named user pointer system instead - `GetUserPtr(const std::string& name)`.
 	 */
+	[[deprecated("This function is deprecated and will be removed in the next major release. Use the named user pointer system instead - `GetUserPtr(const std::string& name)`.")]]
 	void* GetUserPtr();
 
 	/*
+		@brief Gets the user pointer for the library with the specified name.
+		You can do whatever you want with this, but it is mainly used for callbacks.
+		The user pointer system uses an unordered map, so the retrieval time is fast.
+		If there is no error handler and no result argument provided, no error checking will be done.
+		@param name The name of the user pointer.
+		@param result A pointer to a boolean that will be set to true if the user pointer was successfully retrieved, false otherwise.
+		@return The user pointer. An error will be thrown if no user pointer with the specified name exists.
+	 */
+	void* GetUserPtr(const std::string& name, bool* result = nullptr);
+
+	/*
 		@brief Gets the time (sec) since the library was initialized.
+		@return The time, in seconds, since the library was initialized.
 	 */
 	double GetTime();
 
 	/*
 		@brief Returns the name of the Graphics Card / GPU.
+		This function cannot be called before the OpenGL context has been created, so a window needs to be initialized before calling it.
 		@param result A pointer to a boolean that will be set to true if the name was successfully retrieved, false otherwise.
 		@return The name of the GPU.
 	 */
@@ -486,6 +543,19 @@ namespace Onyx
 	class Disposable
 	{
 	public:
+		/*
+			@brief Gets whether the object has been disposed.
+			@return True if dispose() has been called, false otherwise.
+		 */
+		bool isDisposed() const;
+
+		/*
+			@brief Destroys the object, freeing any used memory.
+			Do not use the object after this is called.
+		 */
 		virtual void dispose() = 0;
+
+	protected:
+		bool m_disposed = false;
 	};
 }

@@ -2,8 +2,6 @@
 
 #include <Onyx/Core.h>
 
-#include "spike-dodge/SpikeDodge.h"
-
 class Application
 {
 public:

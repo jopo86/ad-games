@@ -24,6 +24,9 @@
     <ClCompile Include="src\spike-dodge\SpikeDodge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\math-gates\MathGates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\army-math-game\ArmyMathGame.h">
@@ -33,6 +36,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\spike-dodge\SpikeDodge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\math-gates\MathGates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

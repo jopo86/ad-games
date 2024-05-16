@@ -21,9 +21,21 @@ namespace MathGates
 
 		Gate();
 		Gate(int val, Operator op, Onyx::Math::Vec3 color);
-		~Gate();
 
+		void translate(const Onyx::Math::Vec3& translation);
 		void addToRenderer(Onyx::Renderer& renderer);
+
+		bool collision(const Onyx::Math::Vec3& camPos);
+
+		int getVal() const;
+		Operator getOp() const;
+		const Onyx::Math::Vec3& getColor() const;
+
+		void setVal(int val);
+		void setOp(Operator op);
+		void setColor(const Onyx::Math::Vec3& color);
+
+		void refresh();
 
 	private:
 		std::string m_text;
@@ -36,7 +48,10 @@ namespace MathGates
 		Onyx::Renderable m_rightPost;
 		Onyx::Renderable m_screen;
 
+		bool m_collided;
+
 		static bool sm_fontCreated;
 		static Onyx::Font sm_font;
+
 	};
 }

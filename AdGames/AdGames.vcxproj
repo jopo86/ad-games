@@ -159,16 +159,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\math-gates\MathGates.cpp" />
-    <ClCompile Include="src\spike-dodge\SpikeDodge.cpp" />
+    <ClCompile Include="src\ConnectFour.cpp" />
+    <ClCompile Include="src\MathGates.cpp" />
+    <ClCompile Include="src\SpikeDodge.cpp" />
     <ClCompile Include="src\EntryPoint.cpp" />
     <ClCompile Include="src\Application.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\math-gates\MathGates.h" />
+    <ClInclude Include="src\ConnectFour.h" />
+    <ClInclude Include="src\MathGates.h" />
     <ClInclude Include="src\army-math-game\ArmyMathGame.h" />
     <ClInclude Include="src\Application.h" />
-    <ClInclude Include="src\spike-dodge\SpikeDodge.h" />
+    <ClInclude Include="src\SpikeDodge.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

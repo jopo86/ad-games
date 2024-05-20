@@ -89,7 +89,7 @@ void MathGates::Run()
 
 	const bool ALLOW_FULL_MOVEMENT = false;
 
-	float score = 0.0f;
+	long long score = 0.0f;
 
 	input.setCursorLock(true);
 
@@ -134,7 +134,7 @@ void MathGates::Run()
 			}
 		}
 
-		scoreText.setText("Score: " + std::to_string((int)score));
+		scoreText.setText("Score: " + std::to_string(score));
 		float w = window.getBufferWidth(), h = window.getBufferHeight();
 		float tw = scoreText.dimensions().getX(), th = scoreText.dimensions().getY();
 		scoreText.setPosition(Vec2((w - tw) / 2.0f, h - th - 50.0f));
@@ -151,6 +151,7 @@ void MathGates::Run()
 }
 
 Onyx::Font MathGates::Gate::sm_font;
+bool MathGates::Gate::sm_fontCreated = false;
 
 MathGates::Gate::Gate()
 {
@@ -238,7 +239,7 @@ bool MathGates::Gate::collision(const Onyx::Math::Vec3& camPos)
 	return false;
 }
 
-void MathGates::Gate::changeScore(float* score)
+void MathGates::Gate::changeScore(long long* score)
 {
 	switch(m_op)
 	{

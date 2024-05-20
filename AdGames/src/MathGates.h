@@ -27,7 +27,7 @@ namespace MathGates
 
 		bool collision(const Onyx::Math::Vec3& camPos);
 
-		void changeScore(float* score);
+		void changeScore(long long* score);
 
 		int getVal() const;
 		Operator getOp() const;

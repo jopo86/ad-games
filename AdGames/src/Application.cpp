@@ -1,7 +1,8 @@
 #include "Application.h"
 
-#include "spike-dodge/SpikeDodge.h"
-#include "math-gates/MathGates.h"
+#include "SpikeDodge.h"
+#include "MathGates.h"
+#include "ConnectFour.h"
 
 Application::Application()
 {
@@ -13,7 +14,7 @@ void Application::run()
 	m_errorHandler = Onyx::ErrorHandler(true, true);
 	Onyx::Init(m_errorHandler);
 
-	MathGates::Run();
+	ConnectFour::Run();
 }
 
 void Application::dispose()

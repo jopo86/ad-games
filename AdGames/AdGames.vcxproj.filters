@@ -21,10 +21,13 @@
     <ClCompile Include="src\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\spike-dodge\SpikeDodge.cpp">
+    <ClCompile Include="src\SpikeDodge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\math-gates\MathGates.cpp">
+    <ClCompile Include="src\MathGates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ConnectFour.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,10 +38,13 @@
     <ClInclude Include="src\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\spike-dodge\SpikeDodge.h">
+    <ClInclude Include="src\SpikeDodge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\math-gates\MathGates.h">
+    <ClInclude Include="src\MathGates.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ConnectFour.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

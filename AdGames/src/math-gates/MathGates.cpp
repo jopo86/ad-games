@@ -49,9 +49,13 @@ void MathGates::Run()
 		Gate::Operator::Add, Gate::Operator::Subtract, Gate::Operator::Multiply, Gate::Operator::Divide, Gate::Operator::Power 
 	};
 
-	Onyx::Renderable floor = Onyx::Renderable::ColoredRectPrism(5.0f, 0.2f, 100.0f, Vec4::White());
-	floor.translate(Vec3(1.1f, -0.9f, -40.0f));
+	Onyx::Renderable floor = Onyx::Renderable::ColoredRectPrism(5.0f, 0.2f, 200.0f, Vec4::White());
+	floor.translate(Vec3(1.1f, -0.9f, -90.0f));
 	renderer.add(floor);
+
+	Onyx::Font poppins = Onyx::Font::Load(Onyx::Resources("fonts/Poppins/Poppins-Regular.ttf"), 32);
+
+	Onyx::TextRenderable scoreText = Onyx::TextRenderable("Score: 0", poppins, Vec4::White());
 
 	srand(time(nullptr));
 
@@ -60,8 +64,10 @@ void MathGates::Run()
 	{
 		for (int j = 0; j < 2; j++)
 		{
-			int num = rand() % 100;
 			Gate::Operator op = ops[rand() % 5];
+			int num;
+			if (op != Gate::Operator::Power) num = rand() % 100;
+			else num = rand() % 5;
 			Vec3 color;
 			if (op == Gate::Operator::Add || op == Gate::Operator::Multiply || op == Gate::Operator::Power) color = Vec3::Green();
 			else color = Vec3::Red();
@@ -69,12 +75,19 @@ void MathGates::Run()
 			onyx_add_malloc(gate, false);
 			gate->translate(Vec3(j * 2.0f, 0.0f, -i * 7.5f));
 			gate->addToRenderer(renderer);
+			pGates.push_back(gate);
 		}
 	}
+
+	renderer.add(scoreText);
 
 	const double CAM_SPEED = 6.0f;
 	const double PLAYER_SPEED = 1.0f;
 	const double CAM_SENS = 50.0f;
+
+	const double PLAYER_STRAFE_LIMIT = 3.0f;
+
+	const bool ALLOW_FULL_MOVEMENT = false;
 
 	float score = 0.0f;
 
@@ -90,15 +103,26 @@ void MathGates::Run()
 		if (input.isKeyTapped(Onyx::Key::F1)) Onyx::Renderer::ToggleWireframe();
 		if (input.isKeyTapped(Onyx::Key::F12)) window.toggleFullscreen();
 
-		cam.translateFB(CAM_SPEED * dt * PLAYER_SPEED);
+		if (ALLOW_FULL_MOVEMENT)
+		{
+			if (input.isKeyDown(Onyx::Key::W)) cam.translateFB(CAM_SPEED * dt * PLAYER_SPEED);
+			if (input.isKeyDown(Onyx::Key::A)) cam.translateLR(-CAM_SPEED * dt * PLAYER_SPEED);
+			if (input.isKeyDown(Onyx::Key::S)) cam.translateFB(-CAM_SPEED * dt * PLAYER_SPEED);
+			if (input.isKeyDown(Onyx::Key::D)) cam.translateLR(CAM_SPEED * dt * PLAYER_SPEED);
+			if (input.isKeyDown(Onyx::Key::Space)) cam.translateUD(CAM_SPEED * dt * PLAYER_SPEED);
+			if (input.isKeyDown(Onyx::Key::C)) cam.translateUD(-CAM_SPEED * dt * PLAYER_SPEED);
 
-		//if (input.isKeyDown(Onyx::Key::W)) cam.translateFB(CAM_SPEED * dt);
-		if (input.isKeyDown(Onyx::Key::A)) cam.translateLR(-CAM_SPEED * dt);
-		//if (input.isKeyDown(Onyx::Key::S)) cam.translateFB(-CAM_SPEED * dt);
-		if (input.isKeyDown(Onyx::Key::D)) cam.translateLR(CAM_SPEED * dt);
-		if (input.isKeyDown(Onyx::Key::Space)) cam.translateUD(CAM_SPEED * dt);
-		if (input.isKeyDown(Onyx::Key::C)) cam.translateUD(-CAM_SPEED * dt);
-		//cam.rotate(input.getMouseDeltas().getX() / 200.0f * CAM_SENS, input.getMouseDeltas().getY() / 200.0f * CAM_SENS);
+			cam.rotate(input.getMouseDeltas().getX() / 200.0f * CAM_SENS, input.getMouseDeltas().getY() / 200.0f * CAM_SENS);
+		}
+		else
+		{
+			cam.translateFB(CAM_SPEED * dt * PLAYER_SPEED);
+			if (input.isKeyDown(Onyx::Key::A)) cam.translateLR(-CAM_SPEED * dt);
+			if (input.isKeyDown(Onyx::Key::D)) cam.translateLR(CAM_SPEED * dt);
+
+			if (cam.getPosition().getX() < 0.2f - PLAYER_STRAFE_LIMIT) cam.setPosition(Vec3(0.2f - PLAYER_STRAFE_LIMIT, cam.getPosition().getY(), cam.getPosition().getZ()));
+			else if (cam.getPosition().getX() > 0.2f + PLAYER_STRAFE_LIMIT) cam.setPosition(Vec3(0.2f + PLAYER_STRAFE_LIMIT, cam.getPosition().getY(), cam.getPosition().getZ()));
+		}
 
 		cam.update();
 
@@ -106,9 +130,14 @@ void MathGates::Run()
 		{
 			if (gate->collision(cam.getPosition()))
 			{
-
+				gate->changeScore(&score);
 			}
 		}
+
+		scoreText.setText("Score: " + std::to_string((int)score));
+		float w = window.getBufferWidth(), h = window.getBufferHeight();
+		float tw = scoreText.dimensions().getX(), th = scoreText.dimensions().getY();
+		scoreText.setPosition(Vec2((w - tw) / 2.0f, h - th - 50.0f));
 
 		window.startRender();
 		renderer.render();
@@ -126,12 +155,14 @@ bool MathGates::Gate::sm_fontCreated = false;
 
 MathGates::Gate::Gate()
 {
+	m_collided = false;
 	m_val = 0;
 	m_op = Operator::Null;
 }
 
 MathGates::Gate::Gate(int val, Operator op, Vec3 color)
 {
+	m_collided = false;
 	m_val = val;
 	m_op = op;
 	m_color = color;
@@ -195,23 +226,30 @@ void MathGates::Gate::addToRenderer(Onyx::Renderer& renderer)
 
 bool MathGates::Gate::collision(const Onyx::Math::Vec3& camPos)
 {
-	if (m_collided) return;
+	if (m_collided) return false;
 
 	Vec3 pos = m_screen.getPosition();
 
-	if (camPos.getX() > pos.getX() - 0.9f && camPos.getX() < pos.getX() + 0.9f)
+	if (camPos.getX() > pos.getX() - 0.9f && camPos.getX() < pos.getX() + 0.9f
+		&& camPos.getZ() > pos.getZ() - 0.05f && camPos.getZ() < pos.getZ() + 0.05f)
 	{
-		if (camPos.getY() > pos.getY() - 0.6f && camPos.getY() < pos.getY() + 0.6f)
-		{
-			if (camPos.getZ() > pos.getZ() - 0.05f && camPos.getZ() < pos.getZ() + 0.05f)
-			{
-				return true;
-				m_collided = true;
-			}
-		}
+		m_collided = true;
+		return true;
 	}
 
 	return false;
+}
+
+void MathGates::Gate::changeScore(float* score)
+{
+	switch(m_op)
+	{
+		case Operator::Add: *score += m_val; break;
+		case Operator::Subtract: *score -= m_val; break;
+		case Operator::Multiply: *score *= m_val; break;
+		case Operator::Divide: *score /= m_val; break;
+		case Operator::Power: *score = pow(*score, m_val); break;
+	}
 }
 
 int MathGates::Gate::getVal() const
@@ -224,7 +262,7 @@ MathGates::Gate::Operator MathGates::Gate::getOp() const
 	return m_op;
 }
 
-Onyx::Math::Vec3 MathGates::Gate::getColor() const
+const Onyx::Math::Vec3& MathGates::Gate::getColor() const
 {
 	return m_color;
 }

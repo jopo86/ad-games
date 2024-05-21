@@ -31,6 +31,7 @@ const int BOARD_WIDTH = 7, BOARD_HEIGHT = 6;
 Space board[BOARD_WIDTH][BOARD_HEIGHT];
 
 const float DISC_RADIUS = SCR_SIZE / 20;
+const float DISC_FALL_SPEED = 30.0f;
 
 Player curPlayer = Player::Red;
 
@@ -39,8 +40,9 @@ Vec2 getSpacePosition(int i, int j)
 	return Vec2(SCR_SIZE / BOARD_WIDTH * i + SCR_SIZE / BOARD_WIDTH / 2, (SCR_SIZE - 150) / BOARD_HEIGHT * j + SCR_SIZE / BOARD_HEIGHT / 2);
 }
 
-void render(Camera& cam, Renderable& emptyDisc, Renderable& redDiscOuter, Renderable& redDiscInner, Renderable& yellowDiscOuter, Renderable& yellowDiscInner, IVec2 hovered);
+void render(Camera& cam, Renderable& emptyDisc, Renderable& redDiscOuter, Renderable& redDiscInner, Renderable& yellowDiscOuter, Renderable& yellowDiscInner, int hoveredColumn);
 bool isMouseOnSpace(Vec2 mousePos, int* i, int* j);
+bool isMouseOnColumn(Vec2 mousePos, int* i);
 bool checkWinner(Player* player);
 
 void ConnectFour::Run()
@@ -91,7 +93,12 @@ void ConnectFour::Run()
 
 	Font font = Font::Load(Resources("fonts/Poppins/Poppins-Bold.ttf"), 72);
 
-	bool won = false;
+	Vec2 discFallingPos;
+
+	bool over = false;
+	bool discFalling = false;
+
+	int queuedI = -1, queuedJ = -1;
 
 	while (window.isOpen())
 	{
@@ -102,44 +109,108 @@ void ConnectFour::Run()
 
 		cam.update();
 
-		int i = -1, j = -1;
-
-		if (!won)
+		int i = -1;
+		if (!discFalling)
 		{
-			bool mouseOnSpace = isMouseOnSpace(input.getMousePos(), &i, &j);
 
-			if (mouseOnSpace)
+			if (!over)
 			{
-				window.setCursor(handCursor);
-			}
-			else window.setCursor(arrowCursor);
-			if (input.isMouseButtonTapped(MouseButton::Left) && mouseOnSpace)
-			{
-				if (board[i][j] == Space::Empty)
+				bool mouseOnColumn = isMouseOnColumn(input.getMousePos(), &i);
+
+				if (mouseOnColumn)
 				{
-					board[i][j] = curPlayer == Player::Red ? Space::Red : Space::Yellow;
-					curPlayer = curPlayer == Player::Red ? Player::Yellow : Player::Red;
+					window.setCursor(handCursor);
+				}
+				else window.setCursor(arrowCursor);
+				if (input.isMouseButtonTapped(MouseButton::Left) && mouseOnColumn)
+				{
+					for (int j = 0; j < BOARD_HEIGHT; j++)
+					{
+						if (board[i][j] == Space::Empty)
+						{
+							queuedI = i;
+							queuedJ = j;
+							discFalling = true;
+							discFallingPos = getSpacePosition(i, BOARD_HEIGHT);
+							break;
+						}
+					}
 				}
 			}
-		}
 
-		if (!won)
-		{
-			Player winner;
-			if (checkWinner(&winner))
+			if (!over)
 			{
-				TextRenderable* text = new TextRenderable(winner == Player::Red ? "Red Wins!" : "Yellow Wins!", font, winner == Player::Red ? Vec4::Red() : Vec4::Yellow());
-				text->setPosition(Vec2(SCR_SIZE / 2 - text->dimensions().getX() / 2, SCR_SIZE - 50.0f - text->dimensions().getY()));
-				onyx_add_malloc(text, false);
-				renderer.add(*text);
-				won = true;
-				window.setCursor(arrowCursor);
+				Player winner;
+				if (checkWinner(&winner))
+				{
+					TextRenderable* text = new TextRenderable(winner == Player::Red ? "Red Wins!" : "Yellow Wins!", font, winner == Player::Red ? Vec4::Red() : Vec4::Yellow());
+					text->setPosition(Vec2(SCR_SIZE / 2 - text->dimensions().getX() / 2, SCR_SIZE - 50.0f - text->dimensions().getY()));
+					onyx_add_malloc(text, false);
+					renderer.add(*text);
+					over = true;
+					window.setCursor(arrowCursor);
+				}
+				else
+				{
+					bool draw = true;
+					for (int i = 0; i < BOARD_WIDTH; i++)
+					{
+						for (int j = 0; j < BOARD_HEIGHT; j++)
+						{
+							if (board[i][j] == Space::Empty)
+							{
+								draw = false;
+								break;
+							}
+						}
+					}
+
+					if (draw)
+					{
+						TextRenderable* text = new TextRenderable("Draw!", font, Vec4::White());
+						text->setPosition(Vec2(SCR_SIZE / 2 - text->dimensions().getX() / 2, SCR_SIZE - 50.0f - text->dimensions().getY()));
+						onyx_add_malloc(text, false);
+						renderer.add(*text);
+						over = true;
+						window.setCursor(arrowCursor);
+					}
+				}
 			}
 		}
 
 		window.startRender();
 		renderer.render();
-		render(cam, emptyDisc, redDiscOuter, redDiscInner, yellowDiscOuter, yellowDiscInner, IVec2(i, j));
+		render(cam, emptyDisc, redDiscOuter, redDiscInner, yellowDiscOuter, yellowDiscInner, i);
+		if (discFalling && curPlayer == Player::Red)
+		{
+			redDiscOuter.setPosition(Vec3(discFallingPos, 0));
+			redDiscInner.setPosition(Vec3(discFallingPos, 1));
+			redDiscOuter.render(cam.getViewMatrix(), cam.getProjectionMatrix(), cam.getPosition());
+			redDiscInner.render(cam.getViewMatrix(), cam.getProjectionMatrix(), cam.getPosition());
+			discFallingPos.setY(discFallingPos.getY() - DISC_FALL_SPEED);
+			if (discFallingPos.getY() < getSpacePosition(queuedI, queuedJ).getY())
+			{
+				discFalling = false;
+				discFallingPos = getSpacePosition(i, BOARD_HEIGHT);
+				board[queuedI][queuedJ] = curPlayer == Player::Red ? Space::Red : Space::Yellow;
+				curPlayer = curPlayer == Player::Red ? Player::Yellow : Player::Red;
+			}
+		}
+		else if (discFalling && curPlayer == Player::Yellow)
+		{
+			yellowDiscOuter.setPosition(Vec3(discFallingPos, 0));
+			yellowDiscInner.setPosition(Vec3(discFallingPos, 1));
+			yellowDiscOuter.render(cam.getViewMatrix(), cam.getProjectionMatrix(), cam.getPosition());
+			yellowDiscInner.render(cam.getViewMatrix(), cam.getProjectionMatrix(), cam.getPosition());
+			discFallingPos.setY(discFallingPos.getY() - DISC_FALL_SPEED);
+			if (discFallingPos.getY() < getSpacePosition(queuedI, queuedJ).getY())
+			{
+				discFalling = false;
+				discFallingPos = getSpacePosition(i, BOARD_HEIGHT);
+				board[queuedI][queuedJ] = curPlayer == Player::Red ? Space::Red : Space::Yellow;
+				curPlayer = curPlayer == Player::Red ? Player::Yellow : Player::Red;
+			}
+		}
 		window.endRender();
 	}
 
@@ -154,7 +225,7 @@ void ConnectFour::Run()
 	handCursor.dispose();
 }
 
-void render(Camera& cam, Renderable& emptyDisc, Renderable& redDiscOuter, Renderable& redDiscInner, Renderable& yellowDiscOuter, Renderable& yellowDiscInner, IVec2 hovered)
+void render(Camera& cam, Renderable& emptyDisc, Renderable& redDiscOuter, Renderable& redDiscInner, Renderable& yellowDiscOuter, Renderable& yellowDiscInner, int hoveredColumn)
 {
 	for (int i = 0; i < BOARD_WIDTH; i++)
 	{
@@ -177,16 +248,16 @@ void render(Camera& cam, Renderable& emptyDisc, Renderable& redDiscOuter, Render
 				yellowDiscOuter.render(cam.getViewMatrix(), cam.getProjectionMatrix(), cam.getPosition());
 				yellowDiscInner.render(cam.getViewMatrix(), cam.getProjectionMatrix(), cam.getPosition());
 			}
-			else if (hovered.getX() == i && hovered.getY() == j)
+			else if (i == hoveredColumn)
 			{
 				if (curPlayer == Player::Red)
 				{
 					redDiscOuter.getShader()->use();
-					redDiscOuter.getShader()->setVec4("u_color", Vec4::Red() * 0.5f);
+					redDiscOuter.getShader()->setVec4("u_color", Vec4::Red() * 0.9f);
 					redDiscInner.getShader()->use();
-					redDiscInner.getShader()->setVec4("u_color", Vec4::Red() * 0.7f * 0.5f);
-					redDiscOuter.setPosition(Vec3(getSpacePosition(i, j), 0));
-					redDiscInner.setPosition(Vec3(getSpacePosition(i, j), 1));
+					redDiscInner.getShader()->setVec4("u_color", Vec4::Red() * 0.7f * 0.9f);
+					redDiscOuter.setPosition(Vec3(getSpacePosition(i, BOARD_HEIGHT), 0));
+					redDiscInner.setPosition(Vec3(getSpacePosition(i, BOARD_HEIGHT), 1));
 					redDiscOuter.render(cam.getViewMatrix(), cam.getProjectionMatrix(), cam.getPosition());
 					redDiscInner.render(cam.getViewMatrix(), cam.getProjectionMatrix(), cam.getPosition());
 					redDiscOuter.getShader()->use();
@@ -197,11 +268,11 @@ void render(Camera& cam, Renderable& emptyDisc, Renderable& redDiscOuter, Render
 				else
 				{
 					yellowDiscOuter.getShader()->use();
-					yellowDiscOuter.getShader()->setVec4("u_color", Vec4::Yellow() * 0.5f);
+					yellowDiscOuter.getShader()->setVec4("u_color", Vec4::Yellow() * 0.9f);
 					yellowDiscInner.getShader()->use();
-					yellowDiscInner.getShader()->setVec4("u_color", Vec4::Yellow() * 0.7f * 0.5f);
-					yellowDiscOuter.setPosition(Vec3(getSpacePosition(i, j), 0));
-					yellowDiscInner.setPosition(Vec3(getSpacePosition(i, j), 1));
+					yellowDiscInner.getShader()->setVec4("u_color", Vec4::Yellow() * 0.7f * 0.9f);
+					yellowDiscOuter.setPosition(Vec3(getSpacePosition(i, BOARD_HEIGHT), 0));
+					yellowDiscInner.setPosition(Vec3(getSpacePosition(i, BOARD_HEIGHT), 1));
 					yellowDiscOuter.render(cam.getViewMatrix(), cam.getProjectionMatrix(), cam.getPosition());
 					yellowDiscInner.render(cam.getViewMatrix(), cam.getProjectionMatrix(), cam.getPosition());
 					yellowDiscOuter.getShader()->use();
@@ -232,6 +303,22 @@ bool isMouseOnSpace(Vec2 mousePos, int* i, int* j)
 
 	*i = -1;
 	*j = -1;
+	return false;
+}
+
+bool isMouseOnColumn(Vec2 mousePos, int* i)
+{
+	for (int x = 0; x < BOARD_WIDTH; x++)
+	{
+		Vec2 spacePos = getSpacePosition(x, 0);
+		if (abs(mousePos.getX() - spacePos.getX()) < SCR_SIZE / BOARD_WIDTH / 2)
+		{
+			*i = x;
+			return true;
+		}
+	}
+
+	*i = -1;
 	return false;
 }
 

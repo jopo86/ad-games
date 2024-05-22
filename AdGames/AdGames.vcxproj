@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Cannon.cpp" />
     <ClCompile Include="src\ConnectFour.cpp" />
     <ClCompile Include="src\MathGates.cpp" />
     <ClCompile Include="src\SpikeDodge.cpp" />
@@ -166,6 +167,7 @@
     <ClCompile Include="src\Application.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Cannon.h" />
     <ClInclude Include="src\ConnectFour.h" />
     <ClInclude Include="src\MathGates.h" />
     <ClInclude Include="src\army-math-game\ArmyMathGame.h" />

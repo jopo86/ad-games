@@ -144,7 +144,7 @@ void ConnectFour::Run()
 				if (checkWinner(&winner))
 				{
 					TextRenderable* text = new TextRenderable(winner == Player::Red ? "Red Wins!" : "Yellow Wins!", font, winner == Player::Red ? Vec4::Red() : Vec4::Yellow());
-					text->setPosition(Vec2(SCR_SIZE / 2 - text->dimensions().getX() / 2, SCR_SIZE - 50.0f - text->dimensions().getY()));
+					text->setPosition(Vec2(SCR_SIZE / 2 - text->getWidth() / 2, SCR_SIZE - 50.0f - text->getHeight()));
 					onyx_add_malloc(text, false);
 					renderer.add(*text);
 					over = true;
@@ -168,7 +168,7 @@ void ConnectFour::Run()
 					if (draw)
 					{
 						TextRenderable* text = new TextRenderable("Draw!", font, Vec4::White());
-						text->setPosition(Vec2(SCR_SIZE / 2 - text->dimensions().getX() / 2, SCR_SIZE - 50.0f - text->dimensions().getY()));
+						text->setPosition(Vec2(SCR_SIZE / 2 - text->getWidth() / 2, SCR_SIZE - 50.0f - text->getHeight()));
 						onyx_add_malloc(text, false);
 						renderer.add(*text);
 						over = true;

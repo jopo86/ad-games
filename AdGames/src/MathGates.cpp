@@ -136,7 +136,7 @@ void MathGates::Run()
 
 		scoreText.setText("Score: " + std::to_string(score));
 		float w = window.getBufferWidth(), h = window.getBufferHeight();
-		float tw = scoreText.dimensions().getX(), th = scoreText.dimensions().getY();
+		float tw = scoreText.getWidth(), th = scoreText.getHeight();
 		scoreText.setPosition(Vec2((w - tw) / 2.0f, h - th - 50.0f));
 
 		window.startRender();
@@ -195,7 +195,7 @@ MathGates::Gate::Gate(int val, Operator op, Vec3 color)
 		m_textRenderable.translate(Vec3(0.0f, (h - sm_font.getStringDimensions("A").getY() * m_textRenderable.getScale().getY()) / 2.0f, 0.0f));
 	}
 
-	m_textRenderable.translate(Vec3(-m_textRenderable.dimensions().getX() / 2.0f, -0.22f, 0.055f));
+	m_textRenderable.translate(Vec3(-m_textRenderable.getWidth() / 2.0f, -0.22f, 0.055f));
 
 	m_leftPost = Onyx::Renderable::ColoredRectPrism(0.2f, 1.5f, 0.2f, Vec4::LightGray());
 	m_leftPost.translate(Vec3(-1.0f, 0.0f, 0.0f));
@@ -317,7 +317,7 @@ void MathGates::Gate::refresh()
 		m_textRenderable.translate(Vec3(0.0f, (h - sm_font.getStringDimensions("A").getY() * m_textRenderable.getScale().getY()) / 2.0f, 0.0f));
 	}
 
-	m_textRenderable.translate(Vec3(-m_textRenderable.dimensions().getX() / 2.0f, -0.22f, 0.055f));
+	m_textRenderable.translate(Vec3(-m_textRenderable.getWidth() / 2.0f, -0.22f, 0.055f));
 
 	m_leftPost = Onyx::Renderable::ColoredRectPrism(0.2f, 1.5f, 0.2f, Vec4::LightGray());
 	m_leftPost.translate(Vec3(-1.0f, 0.0f, 0.0f));

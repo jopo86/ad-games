@@ -79,7 +79,7 @@ void SpikeDodge::Run()
 
 	Onyx::TextRenderable highScoreText("High Score: 0", fontReg, Vec4(Vec3(0.2f), 0.5f));
 	highScoreText.setScale(0.3f);
-	highScoreText.setPosition(Vec2(20, 720 - 20 - highScoreText.dimensions().getY()));
+	highScoreText.setPosition(Vec2(20, 720 - 20 - highScoreText.getHeight()));
 
 	Onyx::TextRenderable gameOverText("GAME OVER", fontBold, Vec4::Red());
 	Onyx::TextRenderable gameOverSubText("[R] to restart, [ESC] to exit", fontReg, Vec4::Red());
@@ -223,15 +223,13 @@ void SpikeDodge::Run()
 		}
 
 		scoreText.setText(std::to_string((int)score));
-		Vec2 scoreTextSize = scoreText.dimensions();
-		scoreText.setPosition(Vec2(window.getBufferWidth() / 2 - scoreTextSize.getX() / 2, window.getBufferHeight() - 100.0f - scoreTextSize.getY()));
+		scoreText.setPosition(Vec2(window.getBufferWidth() / 2 - scoreText.getWidth() / 2, window.getBufferHeight() - 100.0f - scoreText.getHeight()));
 
 		highScoreText.setText("High Score: " + std::to_string((int)highScore));
-		Vec2 highScoreTextSize = highScoreText.dimensions();
-		highScoreText.setPosition(Vec2(20.0f, window.getBufferHeight() - 20.0f - highScoreTextSize.getY()));
+		highScoreText.setPosition(Vec2(20.0f, window.getBufferHeight() - 20.0f - highScoreText.getHeight()));
 
-		gameOverText.setPosition(Vec2(window.getBufferWidth() / 2 - gameOverText.dimensions().getX() / 2, window.getBufferHeight() / 2 - gameOverText.dimensions().getY() / 2));
-		gameOverSubText.setPosition(Vec2(window.getBufferWidth() / 2 - gameOverSubText.dimensions().getX() / 2, gameOverText.getPosition().getY() - 50.0f));
+		gameOverText.setPosition(Vec2(window.getBufferWidth() / 2 - gameOverText.getWidth() / 2, window.getBufferHeight() / 2 - gameOverText.getHeight() / 2));
+		gameOverSubText.setPosition(Vec2(window.getBufferWidth() / 2 - gameOverSubText.getWidth() / 2, gameOverText.getPosition().getY() - 50.0f));
 
 		spikeSpeed += dt * 0.1f;
 		playerSpeed += dt * 0.05f;

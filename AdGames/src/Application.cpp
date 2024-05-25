@@ -15,7 +15,7 @@ void Application::run()
 	m_errorHandler = Onyx::ErrorHandler(true, true);
 	Onyx::Init(m_errorHandler);
 
-	ConnectFour::Run();
+	Cannon::Run();
 }
 
 void Application::dispose()

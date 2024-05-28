@@ -30,7 +30,7 @@
     <ClCompile Include="src\ConnectFour.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Cannon.cpp">
+    <ClCompile Include="src\CannonGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,7 +50,7 @@
     <ClInclude Include="src\ConnectFour.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Cannon.h">
+    <ClInclude Include="src\CannonGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

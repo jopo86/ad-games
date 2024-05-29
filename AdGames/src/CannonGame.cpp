@@ -20,7 +20,7 @@ const int CANNON_BARREL_WIDTH = 30, CANNON_BARREL_HEIGHT = 100;
 
 const float BALL_SPAWN_INTERVAL = 0.1f;
 const int BALL_RADIUS = 10, BALL_SEGMENTS = 5;
-const float BALL_SPEED = 600.0f;
+const float BALL_SPEED = 500.0f;
 const float BALL_ROT_SPEED_MIN = 50.0f, BALL_ROT_SPEED_MAX = 200.0f;
 
 const float BOULDER_OUTLINE_RATIO = 1.1f;

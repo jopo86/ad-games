@@ -2,6 +2,8 @@
 
 #include "MathGates.h"
 
+#include "Launcher.h"
+
 #include <Onyx/Core.h>
 #include <Onyx/Window.h>
 #include <Onyx/InputHandler.h>
@@ -148,6 +150,8 @@ void MathGates::Run()
 	window.dispose();
 
 	Onyx::Terminate();
+
+	Launcher::GameHub::Launch();
 }
 
 Onyx::Font MathGates::Gate::sm_font;

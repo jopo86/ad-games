@@ -6,6 +6,7 @@
 #include <Onyx/Renderable.h>
 #include <Onyx/TextRenderable.h>
 #include <Onyx/Camera.h>
+#include <Onyx/Math.h>
 
 namespace Launcher
 {
@@ -18,10 +19,14 @@ namespace Launcher
 		void addToRenderer(Onyx::Renderer& renderer);
 		void mouseEnter();
 		void mouseExit();
+		void mouseClick();
+
+		const Onyx::Math::Vec2& getMid() const;
 
 	private:
 		std::string name, imagePath;
 		void (*launchFunc)();
+		Onyx::Math::Vec2 mid;
 
 		Onyx::Renderable background, image;
 		Onyx::TextRenderable3D text;
@@ -31,16 +36,19 @@ namespace Launcher
 	{
 	public:
 
-		GameHub();
-
-		void launch();
+		static void Launch();
 
 	private:
-		void launchSpikeDodge();
-		void launchMathGates();
-		void launchConnectFour();
-		void launchCannon();
+		static void Dispose();
 
-		std::vector<GameWidget> widgets;
+		static void LaunchSpikeDodge();
+		static void LaunchMathGates();
+		static void LaunchConnectFour();
+		static void LaunchCannon();
+
+		static Onyx::Window window;
+		static Onyx::Renderer renderer;
+		static Onyx::Cursor arrowCursor, handCursor;
+		static std::vector<GameWidget> widgets;
 	};
 }

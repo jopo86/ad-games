@@ -2,6 +2,8 @@
 
 #include "CannonGame.h"
 
+#include "Launcher.h"
+
 #include <list>
 
 #include <Onyx/Core.h>
@@ -42,6 +44,8 @@ const float GRAVITY = -100.0f;
 
 void CannonGame::Run()
 {
+	Onyx::Init();
+
 	Monitor monitor = Monitor::GetPrimary();
 
 	Window window(
@@ -278,6 +282,10 @@ void CannonGame::Run()
 	renderer.dispose();
 	crosshair.dispose();
 	font.dispose();
+
+	Onyx::Terminate();
+
+	Launcher::GameHub::Launch();
 }
 
 CannonGame::CannonBall::CannonBall()

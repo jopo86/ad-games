@@ -2,6 +2,8 @@
 
 #include "ConnectFour.h"
 
+#include "Launcher.h"
+
 #include <Onyx/Core.h>
 #include <Onyx/Window.h>
 #include <Onyx/InputHandler.h>
@@ -47,6 +49,8 @@ bool checkWinner(Player* player);
 
 void ConnectFour::Run()
 {
+	Onyx::Init();
+
 	for (int i = 0; i < BOARD_WIDTH; i++)
 	{
 		for (int j = 0; j < BOARD_HEIGHT; j++)
@@ -223,6 +227,10 @@ void ConnectFour::Run()
 	yellowDiscInner.dispose();
 	arrowCursor.dispose();
 	handCursor.dispose();
+
+	Onyx::Terminate();
+
+	Launcher::GameHub::Launch();
 }
 
 void render(Camera& cam, Renderable& emptyDisc, Renderable& redDiscOuter, Renderable& redDiscInner, Renderable& yellowDiscOuter, Renderable& yellowDiscInner, int hoveredColumn)

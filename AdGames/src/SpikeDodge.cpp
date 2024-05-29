@@ -2,6 +2,8 @@
 
 #include "SpikeDodge.h"
 
+#include "Launcher.h"
+
 #include <Onyx/Core.h>
 #include <Onyx/Window.h>
 #include <Onyx/InputHandler.h>
@@ -246,6 +248,8 @@ void SpikeDodge::Run()
 
 	Onyx::Terminate();
 	if (restart) Run();
+
+	Launcher::GameHub::Launch();
 }
 
 bool collision(const Onyx::ModelRenderable& player, const Onyx::ModelRenderable& spike)

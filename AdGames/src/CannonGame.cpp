@@ -1,3 +1,5 @@
+#pragma warning(disable: 4244; disable: 305)
+
 #include "CannonGame.h"
 
 #include <list>
@@ -15,12 +17,33 @@ const int SCR_WIDTH = 1280, SCR_HEIGHT = 720;
 const int FLOOR_HEIGHT = 150;
 const int CANNON_BODY_WIDTH = 100, CANNON_BODY_HEIGHT = 50;
 const int CANNON_BARREL_WIDTH = 30, CANNON_BARREL_HEIGHT = 100;
+
+const float BALL_SPAWN_INTERVAL = 0.1f;
 const int BALL_RADIUS = 10, BALL_SEGMENTS = 5;
+const float BALL_SPEED = 600.0f;
+const float BALL_ROT_SPEED_MIN = 50.0f, BALL_ROT_SPEED_MAX = 200.0f;
+
+const float BOULDER_OUTLINE_RATIO = 1.1f;
+const float BOULDER_SPAWN_INTERVAL = 2.0f;
+const int	BOULDER_STARTING_HEALTH = 5, BOULDER_STARTING_RADIUS = 50, BOULDER_STARTING_SEGMENTS = 5;
+const float BOUDLER_HEALTH_RANGE = 5, BOULDER_HEALTH_INC = 5;
+const float BOULDER_RADIUS_RANGE = 25, BOULDER_RADIUS_INC = 0.3;
+const float BOULDER_SEGMENTS_RANGE = 2.0f, BOULDER_SEGMENTS_INC = 0.02f;
+const float BOULDER_VEL_MIN_X = 200.0f, BOULDER_VEL_MAX_X = 400.0f;
+const float BOULDER_VEL_MIN_Y = 0.0f, BOULDER_VEL_MAX_Y = 50.0f;
+const float BOULDER_ROT_SPEED_MIN = 20.0f, BOULDER_ROT_SPEED_MAX = 100.0f;
+
+const float STRAFE_SPEED = 200.0f, STRAFE_RANGE = SCR_WIDTH / 2.0f - CANNON_BODY_WIDTH / 2.0f - 50.0f;
+const float DAMAGE_INC = 0.25f;
+
+const float BL_TEXT_PADDING = 20.0f, BL_TEXT_SCALE = 0.2f;
 
 const float GRAVITY = -100.0f;
 
 void CannonGame::Run()
 {
+	Monitor monitor = Monitor::GetPrimary();
+
 	Window window(
 		WindowProperties{
 			.title = "Cannon",
@@ -32,6 +55,10 @@ void CannonGame::Run()
 	);
 
 	window.init();
+	window.setPosition(Vec2(monitor.getWidth() / 2 - SCR_WIDTH / 2, monitor.getHeight() / 2 - SCR_HEIGHT / 2));
+
+	Cursor crosshair = Cursor::Standard(CursorType::Crosshair);
+	window.setCursor(crosshair);
 
 	InputHandler input;
 	window.linkInputHandler(input);
@@ -72,32 +99,104 @@ void CannonGame::Run()
 	std::list<CannonBall> cannonBalls;
 	std::list<Boulder> boulders;
 
-	input.setMouseButtonCooldown(MouseButton::Left, 0.1f);
-
 	Font font = Font::Load(Resources("fonts/Poppins/Poppins-Bold.ttf"), 256);
 
-	boulders.push_back(Boulder(Vec2(200.0f, 100.0f), Vec2(0.0f, SCR_HEIGHT - 100.0f), 0.0f, 20.0f, 50.0f, 5, 10, Vec3::Red(), &font));
-	boulders.push_back(Boulder(Vec2(-200.0f, 100.0f), Vec2(SCR_WIDTH, SCR_HEIGHT - 100.0f), 0.0f, -20.0f, 20.0f, 6, 50, Vec3::Green(), &font));
-	boulders.push_back(Boulder(Vec2(0.0f, 0.0f), Vec2(SCR_WIDTH / 2, SCR_HEIGHT - 100.0f), 0.0f, 0.0f, 80.0f, 5, 20, Vec3::Blue(), &font));
+	TextRenderable3D nMissedText("0", font, Vec4::Red(0.8f));
+	nMissedText.setScale(BL_TEXT_SCALE);
+	nMissedText.setPosition(Vec3(BL_TEXT_PADDING, BL_TEXT_PADDING, 0.1f));
+
+	TextRenderable3D nDestroyedText("0", font, Vec4::White(0.8f));
+	nDestroyedText.setScale(BL_TEXT_SCALE);
+	nDestroyedText.setPosition(Vec3(BL_TEXT_PADDING, BL_TEXT_PADDING + nMissedText.getHeight() + BL_TEXT_PADDING, 0.1f));
+
+	renderer.add(nMissedText);
+	renderer.add(nDestroyedText);
+
+	Vec3 colors[] = { Vec3::Red(), Vec3::Orange(), Vec3::Green(), Vec3::Blue(), Vec3::Cyan(), Vec3::Magenta(), Vec3::Pink(), Vec3::Purple(), Vec3::Brown() };
+
+	float boulderSpawnTimer = 0.0f;
+	float boulderHealthMin = BOULDER_STARTING_HEALTH, boulderRadiusMin = BOULDER_STARTING_RADIUS, boulderSegmentsMin = BOULDER_STARTING_SEGMENTS;
+
+	float damage = 1.0f;
+	bool ballRotEnabled = true;
+
+	int nDestroyed = 0, nMissed = 0;
+
+	float ballSpawnTimer = 0.0f;
 
 	while (window.isOpen())
 	{
 		double dt = window.getDeltaTime();
+		boulderSpawnTimer += dt;
+		ballSpawnTimer += dt;
+
+		if (boulderSpawnTimer >= BOULDER_SPAWN_INTERVAL)
+		{
+			boulderSpawnTimer = BOULDER_SPAWN_INTERVAL - boulderSpawnTimer;
+
+			bool left = Rand<int>(0, 1);
+			float rot = Rand<float>(0.0f, 360.0f);
+			float rotStep = Rand<float>(BOULDER_ROT_SPEED_MIN, BOULDER_ROT_SPEED_MAX);
+			if (left) rotStep = -rotStep;
+			float radius = Rand<float>(boulderRadiusMin, boulderRadiusMin + BOULDER_RADIUS_RANGE);
+			int nSegments = Rand<int>(boulderSegmentsMin, boulderSegmentsMin + BOULDER_SEGMENTS_RANGE);
+			int health = Rand<int>(boulderHealthMin, boulderHealthMin + BOUDLER_HEALTH_RANGE);
+			Vec2 vel, pos;
+			if (left)
+			{
+				vel = Vec2(Rand<float>(BOULDER_VEL_MIN_X, BOULDER_VEL_MAX_X), Rand<float>(BOULDER_VEL_MIN_Y, BOULDER_VEL_MAX_Y));
+				pos = Vec2(-radius, SCR_HEIGHT - 100.0f);
+			}
+			else
+			{
+				vel = Vec2(-Rand<float>(BOULDER_VEL_MIN_X, BOULDER_VEL_MAX_X), Rand<float>(BOULDER_VEL_MIN_Y, BOULDER_VEL_MAX_Y));
+				pos = Vec2(SCR_WIDTH + radius, SCR_HEIGHT - 100.0f);
+			}
+			boulders.push_back(Boulder(vel, pos, rot, rotStep, radius, nSegments, health, colors[Rand<int>(0, sizeof(colors) / sizeof(Vec3) - 1)], &font));
+
+			boulderHealthMin += BOULDER_HEALTH_INC;
+			boulderRadiusMin += BOULDER_RADIUS_INC;
+			boulderSegmentsMin += BOULDER_SEGMENTS_INC;
+
+			damage += DAMAGE_INC;
+		}
 
 		double deg = Degrees(Atan2(input.getMousePos().getY() - cannonBarrelRenderable.getPosition().getY(), input.getMousePos().getX() - cannonBarrelRenderable.getPosition().getX()));
 		if (deg < 0) deg += 360;
 		deg -= 90;
 		if (deg > 180 && deg < 270) deg = -90;
 
+		if (ballSpawnTimer >= BALL_SPAWN_INTERVAL)
+		{
+			ballSpawnTimer = BALL_SPAWN_INTERVAL - ballSpawnTimer;
+			Vec2 pos(cannonBarrelRenderable.getPosition().getX(), cannonBarrelRenderable.getPosition().getY());
+			Vec2 dir = Vec2(Cos(Radians(Clamp(deg, -60, 60) + 90)), Sin(Radians(Clamp(deg, -60, 60) + 90))).getNormalized();
+			pos += dir * (3.0f * CANNON_BARREL_HEIGHT / 4.0f - BALL_RADIUS);
+			cannonBalls.push_back(CannonBall(dir * BALL_SPEED, pos, ballRotEnabled ? Rand<float>(0.0f, 360.0f) : 0.0f, ballRotEnabled ? Rand<float>(BALL_ROT_SPEED_MIN, BALL_ROT_SPEED_MAX) : 0.0f, &cannonBallRenderable));
+		}
+
 		input.update();
 		if (input.isKeyTapped(Key::Escape)) window.close();
 		if (input.isKeyTapped(Key::F1)) Renderer::ToggleWireframe();
-		if (input.isMouseButtonPressed(MouseButton::Left))
+		if (input.isKeyDown(Key::A) || input.isKeyDown(Key::ArrowLeft))
 		{
-			Vec2 pos(cannonBarrelRenderable.getPosition().getX(), cannonBarrelRenderable.getPosition().getY());
-			Vec2 dir = Vec2(Cos(Radians(Clamp(deg, -60, 60) + 90)), Sin(Radians(Clamp(deg, -60, 60) + 90))).getNormalized();
-			pos += dir *  (3.0f * CANNON_BARREL_HEIGHT / 4.0f - BALL_RADIUS);
-			cannonBalls.push_back(CannonBall(dir * 500.0f, pos, Math::Rand<float>(0.0f, 360.0f), Math::Rand<float>(50.0f, 360.0f), &cannonBallRenderable));
+			cannonBodyRenderable.translate(Vec3(-STRAFE_SPEED * dt, 0.0f, 0.0f));
+			cannonBarrelRenderable.translate(Vec3(-STRAFE_SPEED * dt, 0.0f, 0.0f));
+			if (cannonBodyRenderable.getPosition().getX() < CANNON_BODY_WIDTH / 2) 
+			{
+				cannonBodyRenderable.setPosition(Vec3(CANNON_BODY_WIDTH / 2, cannonBodyRenderable.getPosition().getY(), 0.0f));
+				cannonBarrelRenderable.setPosition(Vec3(CANNON_BODY_WIDTH / 2, cannonBarrelRenderable.getPosition().getY(), 0.0f));
+			}
+		}
+		if (input.isKeyDown(Key::D) || input.isKeyDown(Key::ArrowRight))
+		{
+			cannonBodyRenderable.translate(Vec3(STRAFE_SPEED * dt, 0.0f, 0.0f));
+			cannonBarrelRenderable.translate(Vec3(STRAFE_SPEED * dt, 0.0f, 0.0f));
+			if (cannonBodyRenderable.getPosition().getX() > SCR_WIDTH - CANNON_BODY_WIDTH / 2)
+			{
+				cannonBodyRenderable.setPosition(Vec3(SCR_WIDTH - CANNON_BODY_WIDTH / 2, cannonBodyRenderable.getPosition().getY(), 0.0f));
+				cannonBarrelRenderable.setPosition(Vec3(SCR_WIDTH - CANNON_BODY_WIDTH / 2, cannonBarrelRenderable.getPosition().getY(), 0.0f));
+			}
 		}
 
 		cam.update();
@@ -105,6 +204,9 @@ void CannonGame::Run()
 		//std::cout << cannonBalls.size() << "\n";
 
 		cannonBarrelRenderable.setRotation(Vec3(0.0f, 0.0f, Clamp(deg, -60, 60)));
+
+		nMissedText.setText(std::to_string(nMissed));
+		nDestroyedText.setText(std::to_string(nDestroyed));
 
 		window.startRender();
 		renderer.render(); 
@@ -142,26 +244,30 @@ void CannonGame::Run()
 					CannonBall& ball = *ballIt;
 					if (boulder.collision(ball))
 					{
-						boulder.damage(1);
+						boulder.damage((int)damage);
 						cannonBalls.erase(ballIt++);
 					} 
-					ballIt++;
+					else ballIt++;
 				}
 
 				if (boulder.destroyed)
 				{
 					boulder.dispose();
 					boulders.erase(boulderIt++);
+					nDestroyed++;
 				}
 				else if (boulder.pos.getY() < FLOOR_HEIGHT - boulder.radius)
 				{
 					boulder.dispose();
 					boulders.erase(boulderIt++);
+					nMissed++;
 				}
-
-				boulder.update(dt);
-				boulder.render(cam);
-				boulderIt++;
+				else
+				{
+					boulder.update(dt);
+					boulder.render(cam);
+					boulderIt++;
+				}
 			}
 		}
 
@@ -170,6 +276,8 @@ void CannonGame::Run()
 
 	window.dispose();
 	renderer.dispose();
+	crosshair.dispose();
+	font.dispose();
 }
 
 CannonGame::CannonBall::CannonBall()
@@ -191,7 +299,7 @@ void CannonGame::CannonBall::update(float dt)
 {
 	pos += vel * dt;
 	rot += rotStep * dt;
-	renderable->setPosition(Vec3(pos.getX(), pos.getY(), -1.0f));
+	renderable->setPosition(Vec3(pos.getX(), pos.getY(), -0.5f));
 	renderable->setRotation(Vec3(0.0f, 0.0f, rot));
 }
 
@@ -204,6 +312,7 @@ CannonGame::Boulder::Boulder()
 {
 	rot = rotStep = radius = 0.0f;
 	nSegments = health = 0;
+	font = nullptr;
 	destroyed = false;
 }
 
@@ -220,7 +329,7 @@ CannonGame::Boulder::Boulder(Vec2 vel, Vec2 pos, float rot, float rotStep, float
 	this->font = font;
 	destroyed = false;
 
-	outer = Renderable::ColoredCircle(radius * 1.1f, nSegments, Vec3::Black());
+	outer = Renderable::ColoredCircle(radius * BOULDER_OUTLINE_RATIO, nSegments, Vec3::Black());
 	outer.setPosition(Vec3(pos.getX(), pos.getY(), -1.0f));
 	outer.setRotation(Vec3(0.0f, 0.0f, rot));
 
@@ -228,9 +337,9 @@ CannonGame::Boulder::Boulder(Vec2 vel, Vec2 pos, float rot, float rotStep, float
 	inner.setPosition(Vec3(pos.getX(), pos.getY(), -0.9f));
 	inner.setRotation(Vec3(0.0f, 0.0f, rot));
 
-	text = TextRenderable3D(std::to_string(health), *font, Vec3::White());
+	text = TextRenderable3D(std::to_string(health), *font, Vec4::White(0.8f));
 	text.setPosition(Vec3(pos.getX() - text.getWidth() / 2.0f, pos.getY() - text.getHeight() / 2.0f, -0.7f));
-	text.setScale(radius / 50.0f * 48 / font->getSize());
+	text.setScale(radius / 50.0f * 32 / font->getSize());
 }
 
 void CannonGame::Boulder::update(float dt)

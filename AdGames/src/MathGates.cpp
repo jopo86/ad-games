@@ -11,7 +11,7 @@
 #include <Onyx/FileUtils.h>
 #include <Onyx/Monitor.h>
 
-using Onyx::Math::Vec2, Onyx::Math::Vec3, Onyx::Math::Vec4, Onyx::Math::IVec2;
+using Onyx::Math::Vec2, Onyx::Math::Vec3, Onyx::Math::Vec4, Onyx::Math::IVec2, Onyx::Math::Rand;
 
 void onyx_add_malloc(void*, bool);
 
@@ -34,12 +34,22 @@ void MathGates::Run()
 	Onyx::Monitor monitor = Onyx::Monitor::GetPrimary();
 	window.setPosition(IVec2(monitor.getDimensions().getX() / 2 - window.getWidth() / 2, monitor.getDimensions().getY() / 2 - window.getHeight() / 2));
 
+	Onyx::WindowIcon icon = Onyx::WindowIcon::Load({
+		Onyx::Resources("icons/icon-16x.png"),
+		Onyx::Resources("icons/icon-24x.png"),
+		Onyx::Resources("icons/icon-32x.png"),
+		Onyx::Resources("icons/icon-48x.png"),
+		Onyx::Resources("icons/icon-256x.png")
+	});
+	window.setIcon(icon);
+	icon.dispose();
+
 	Onyx::InputHandler input;
 	window.linkInputHandler(input);
 
 	Onyx::Camera cam(Onyx::Projection::Perspective(60.0f, 1280, 720));
 	window.linkCamera(cam);
-	cam.translate(Vec3(1.0f, 0.2f, -2.0f));
+	cam.translate(Vec3(1.0f, 0.2f, -20.0f));
 
 	Onyx::Lighting lighting(Vec3::White(), 0.3f, Vec3(0.2f, -1.0f, -0.3f));
 	Onyx::Fog fog(Vec3::LightBlue(), 20.0f, 40.0f);
@@ -56,20 +66,34 @@ void MathGates::Run()
 	renderer.add(floor);
 
 	Onyx::Font poppins = Onyx::Font::Load(Onyx::Resources("fonts/Poppins/Poppins-Regular.ttf"), 32);
+	Onyx::Font poppinsBold = Onyx::Font::Load(Onyx::Resources("fonts/Poppins/Poppins-Bold.ttf"), 64);
 
 	Onyx::TextRenderable scoreText = Onyx::TextRenderable("Score: 0", poppins, Vec4::White());
 
 	srand(time(nullptr));
 
 	std::vector<Gate*> pGates;
+
+	bool squared = false;
 	for (int i = 20; i >= 0; i--)
 	{
 		for (int j = 0; j < 2; j++)
 		{
-			Gate::Operator op = ops[rand() % 5];
+			Gate::Operator op = ops[Rand<int>(0, 4)];
 			int num;
-			if (op != Gate::Operator::Power) num = rand() % 100;
-			else num = rand() % 5;
+			if (op == Gate::Operator::Add || op == Gate::Operator::Subtract) num = Rand<int>(0, 100);
+			else if (op == Gate::Operator::Multiply) num = Rand<int>(0, 10);
+			else if (op == Gate::Operator::Divide) num = Rand<int>(1, 10);
+			else num = Rand<int>(1, 2);
+			if (op == Gate::Operator::Power && num == 2)
+			{
+				if (squared)
+				{
+					j--;
+					continue;
+				}
+				else squared = true;
+			}
 			Vec3 color;
 			if (op == Gate::Operator::Add || op == Gate::Operator::Multiply || op == Gate::Operator::Power) color = Vec3::Green();
 			else color = Vec3::Red();
@@ -95,6 +119,8 @@ void MathGates::Run()
 
 	input.setCursorLock(true);
 
+	bool running = true;
+
 	while (window.isOpen())
 	{
 		double dt = window.getDeltaTime();
@@ -105,41 +131,56 @@ void MathGates::Run()
 		if (input.isKeyTapped(Onyx::Key::F1)) Onyx::Renderer::ToggleWireframe();
 		if (input.isKeyTapped(Onyx::Key::F12)) window.toggleFullscreen();
 
-		if (ALLOW_FULL_MOVEMENT)
+		if (running)
 		{
-			if (input.isKeyDown(Onyx::Key::W)) cam.translateFB(CAM_SPEED * dt * PLAYER_SPEED);
-			if (input.isKeyDown(Onyx::Key::A)) cam.translateLR(-CAM_SPEED * dt * PLAYER_SPEED);
-			if (input.isKeyDown(Onyx::Key::S)) cam.translateFB(-CAM_SPEED * dt * PLAYER_SPEED);
-			if (input.isKeyDown(Onyx::Key::D)) cam.translateLR(CAM_SPEED * dt * PLAYER_SPEED);
-			if (input.isKeyDown(Onyx::Key::Space)) cam.translateUD(CAM_SPEED * dt * PLAYER_SPEED);
-			if (input.isKeyDown(Onyx::Key::C)) cam.translateUD(-CAM_SPEED * dt * PLAYER_SPEED);
+			if (ALLOW_FULL_MOVEMENT)
+			{
+				if (input.isKeyDown(Onyx::Key::W)) cam.translateFB(CAM_SPEED * dt * PLAYER_SPEED);
+				if (input.isKeyDown(Onyx::Key::A)) cam.translateLR(-CAM_SPEED * dt * PLAYER_SPEED);
+				if (input.isKeyDown(Onyx::Key::S)) cam.translateFB(-CAM_SPEED * dt * PLAYER_SPEED);
+				if (input.isKeyDown(Onyx::Key::D)) cam.translateLR(CAM_SPEED * dt * PLAYER_SPEED);
+				if (input.isKeyDown(Onyx::Key::Space)) cam.translateUD(CAM_SPEED * dt * PLAYER_SPEED);
+				if (input.isKeyDown(Onyx::Key::C)) cam.translateUD(-CAM_SPEED * dt * PLAYER_SPEED);
 
-			cam.rotate(input.getMouseDeltas().getX() / 200.0f * CAM_SENS, input.getMouseDeltas().getY() / 200.0f * CAM_SENS);
-		}
-		else
-		{
-			cam.translateFB(CAM_SPEED * dt * PLAYER_SPEED);
-			if (input.isKeyDown(Onyx::Key::A)) cam.translateLR(-CAM_SPEED * dt);
-			if (input.isKeyDown(Onyx::Key::D)) cam.translateLR(CAM_SPEED * dt);
+				cam.rotate(input.getMouseDeltas().getX() / 200.0f * CAM_SENS, input.getMouseDeltas().getY() / 200.0f * CAM_SENS);
+			}
+			else
+			{
+				cam.translateFB(CAM_SPEED * dt * PLAYER_SPEED);
+				if (input.isKeyDown(Onyx::Key::A)) cam.translateLR(-CAM_SPEED * dt);
+				if (input.isKeyDown(Onyx::Key::D)) cam.translateLR(CAM_SPEED * dt);
 
-			if (cam.getPosition().getX() < 0.2f - PLAYER_STRAFE_LIMIT) cam.setPosition(Vec3(0.2f - PLAYER_STRAFE_LIMIT, cam.getPosition().getY(), cam.getPosition().getZ()));
-			else if (cam.getPosition().getX() > 0.2f + PLAYER_STRAFE_LIMIT) cam.setPosition(Vec3(0.2f + PLAYER_STRAFE_LIMIT, cam.getPosition().getY(), cam.getPosition().getZ()));
+				if (cam.getPosition().getX() < 0.2f - PLAYER_STRAFE_LIMIT) cam.setPosition(Vec3(0.2f - PLAYER_STRAFE_LIMIT, cam.getPosition().getY(), cam.getPosition().getZ()));
+				else if (cam.getPosition().getX() > 0.2f + PLAYER_STRAFE_LIMIT) cam.setPosition(Vec3(0.2f + PLAYER_STRAFE_LIMIT, cam.getPosition().getY(), cam.getPosition().getZ()));
+			}
+
+			for (Gate* gate : pGates)
+			{
+				if (gate->collision(cam.getPosition()))
+				{
+					gate->changeScore(&score);
+				}
+			}
+
+			if (cam.getPosition().getZ() < -155.0f)
+			{
+				running = false;
+				Onyx::TextRenderable finalScore("SCORE: " + std::to_string(score), poppinsBold, score > 0 ? Vec4::Green() : Vec4::Red());
+				Onyx::TextRenderable* pFinalScore = new Onyx::TextRenderable(finalScore);
+				onyx_add_malloc(pFinalScore, false);
+				pFinalScore->setPosition(Vec2(1280 / 2 - pFinalScore->getWidth() / 2, 720 / 2 - pFinalScore->getHeight() / 2));
+				renderer.add(*pFinalScore);
+				scoreText.hide();
+				floor.hide();
+			}
+
+			scoreText.setText("Score: " + std::to_string(score));
+			float w = window.getBufferWidth(), h = window.getBufferHeight();
+			float tw = scoreText.getWidth(), th = scoreText.getHeight();
+			scoreText.setPosition(Vec2((w - tw) / 2.0f, h - th - 50.0f));
 		}
 
 		cam.update();
-
-		for (Gate* gate : pGates)
-		{
-			if (gate->collision(cam.getPosition()))
-			{
-				gate->changeScore(&score);
-			}
-		}
-
-		scoreText.setText("Score: " + std::to_string(score));
-		float w = window.getBufferWidth(), h = window.getBufferHeight();
-		float tw = scoreText.getWidth(), th = scoreText.getHeight();
-		scoreText.setPosition(Vec2((w - tw) / 2.0f, h - th - 50.0f));
 
 		window.startRender();
 		renderer.render();

@@ -39,6 +39,16 @@ void Launcher::GameHub::Launch()
 
 	window.init();
 
+	Onyx::WindowIcon icon = Onyx::WindowIcon::Load({
+		Onyx::Resources("icons/icon-16x.png"),
+		Onyx::Resources("icons/icon-24x.png"),
+		Onyx::Resources("icons/icon-32x.png"),
+		Onyx::Resources("icons/icon-48x.png"),
+		Onyx::Resources("icons/icon-256x.png")
+	});
+	window.setIcon(icon);
+	icon.dispose();
+
 	arrowCursor = Cursor::Standard(CursorType::Arrow);
 	handCursor = Cursor::Standard(CursorType::Hand);
 

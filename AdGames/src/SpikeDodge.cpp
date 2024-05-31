@@ -34,6 +34,16 @@ void SpikeDodge::Run()
 	Onyx::Monitor monitor = Onyx::Monitor::GetPrimary();
 	window.setPosition(IVec2(monitor.getDimensions().getX() / 2 - window.getWidth() / 2, monitor.getDimensions().getY() / 2 - window.getHeight() / 2));
 
+	Onyx::WindowIcon icon = Onyx::WindowIcon::Load({
+		Onyx::Resources("icons/icon-16x.png"),
+		Onyx::Resources("icons/icon-24x.png"),
+		Onyx::Resources("icons/icon-32x.png"),
+		Onyx::Resources("icons/icon-48x.png"),
+		Onyx::Resources("icons/icon-256x.png")
+	});
+	window.setIcon(icon);
+	icon.dispose();
+
 	Onyx::InputHandler input;
 	window.linkInputHandler(input);
 

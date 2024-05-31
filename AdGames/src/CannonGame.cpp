@@ -61,6 +61,16 @@ void CannonGame::Run()
 	window.init();
 	window.setPosition(Vec2(monitor.getWidth() / 2 - SCR_WIDTH / 2, monitor.getHeight() / 2 - SCR_HEIGHT / 2));
 
+	Onyx::WindowIcon icon = Onyx::WindowIcon::Load({
+		Onyx::Resources("icons/icon-16x.png"),
+		Onyx::Resources("icons/icon-24x.png"),
+		Onyx::Resources("icons/icon-32x.png"),
+		Onyx::Resources("icons/icon-48x.png"),
+		Onyx::Resources("icons/icon-256x.png")
+	});
+	window.setIcon(icon);
+	icon.dispose();
+
 	Cursor crosshair = Cursor::Standard(CursorType::Crosshair);
 	window.setCursor(crosshair);
 

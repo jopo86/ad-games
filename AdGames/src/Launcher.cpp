@@ -28,10 +28,11 @@ void Launcher::GameHub::Launch()
 
 	window = Window(
 		WindowProperties{
-			.title = "Game Hub",
+			.title = "Launcher",
 			.width = SCR_WIDTH,
 			.height = SCR_HEIGHT,
 			.position = Vec2(monitor.getWidth() / 2 - SCR_WIDTH / 2, monitor.getHeight() / 2 - SCR_HEIGHT / 2),
+			.resizable = false,
 			.nSamplesMSAA = 16,
 			.backgroundColor = Vec3::DarkGray() * 0.6f,
 		}
